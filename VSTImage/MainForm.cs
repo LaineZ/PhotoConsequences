@@ -249,21 +249,6 @@ namespace VSTImage
             Images.Clear();
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void groupBox3_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void listPlugins_SelectedIndexChanged(object sender, EventArgs e)
         {
             SetPluginControls();
@@ -315,7 +300,8 @@ namespace VSTImage
             {
                 Log.Information("Proccessing image...");
                 ImageProcessor processor = new ImageProcessor(plugin);
-                processor.ProcessImage(Images.Last());
+                var image = processor.ProcessImage(Images.Last());
+                Images.Add(image);
                 complete++;
                 backgroundWorker.ReportProgress(complete / max * 100);
             }
@@ -333,11 +319,19 @@ namespace VSTImage
 
         private void undoBtn_Click(object sender, EventArgs e)
         {
-                        Log.Verbose("Undo buffer: {0}", Images.Count);
+            int state = 0;
+            foreach (var item in Images)
+            {
+                item.Save($"undostate{state}.png");
+                state++;
+            }
+            Log.Verbose("Undo buffer: {0}", Images.Count);
             if (Images.Count > 1)
             {
                 Images.RemoveAt(Images.Count - 1);
             }
+
+            SetImageControls();
         }
     }
 }

@@ -59,7 +59,14 @@ namespace VSTImage
             value = max / 255d;
         }
 
-        public void ProcessImage(Bitmap Image)
+        /// <summary>
+        /// Processes image
+        /// </summary>
+        /// <param name="Image">Input Image</param>
+        /// <returns>
+        /// Output image
+        /// </returns>
+        public Bitmap ProcessImage(Bitmap image)
         {
             // plugin does not support processing audio
             if ((ChainedPlugin.PluginContext.PluginInfo.Flags & VstPluginFlags.CanReplacing) == 0)
@@ -67,8 +74,9 @@ namespace VSTImage
                 throw new InvalidOperationException("This plugin is not a effect");
             }
 
+            Bitmap outputImage = (Bitmap)image.Clone();
             GraphicsUnit units = GraphicsUnit.Pixel;
-            RectangleF size = Image.GetBounds(ref units);
+            RectangleF size = outputImage.GetBounds(ref units);
 
             int inputCount = ChainedPlugin.PluginContext.PluginInfo.AudioInputCount;
             int outputCount = ChainedPlugin.PluginContext.PluginInfo.AudioOutputCount;
@@ -86,7 +94,7 @@ namespace VSTImage
                 {
                     for (int y = 0; y < size.Height; y++)
                     {
-                        span[(int)size.Width * y + x] = Image.GetPixel(x, y).GetBrightness();
+                        span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetBrightness();
                     }
                 }
             }
@@ -107,7 +115,7 @@ namespace VSTImage
             {
                 for (int y = 0; y < size.Height; y++)
                 {
-                    var pixel = Image.GetPixel(x, y);
+                    var pixel = outputImage.GetPixel(x, y);
                     ColorToHSV(pixel, out var hue, out var saturation, out var value);
 
                     var processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Value];
@@ -128,11 +136,13 @@ namespace VSTImage
                         saturation = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Dry;
                     }
 
-                    Image.SetPixel(x, y, ColorFromHSV(hue, saturation, value));
+                    outputImage.SetPixel(x, y, ColorFromHSV(hue, saturation, value));
                 }
             }
 
             Log.Information("Done!");
+
+            return outputImage;
         }
     }
 }

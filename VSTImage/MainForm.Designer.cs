@@ -35,6 +35,7 @@ namespace VSTImage
             this.openPluginEditorBtn = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
+            this.undoBtn = new System.Windows.Forms.Button();
             this.removePlugBtn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.trackWet = new System.Windows.Forms.TrackBar();
@@ -46,22 +47,21 @@ namespace VSTImage
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolOpenImageBtn = new System.Windows.Forms.ToolStripButton();
-            this.toolAddVstBtn = new System.Windows.Forms.ToolStripButton();
             this.toolSaveimgBtn = new System.Windows.Forms.ToolStripButton();
+            this.toolAddVstBtn = new System.Windows.Forms.ToolStripButton();
             this.toolApplyBtn = new System.Windows.Forms.ToolStripButton();
             this.progressProcessing = new System.Windows.Forms.ToolStripProgressBar();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.pictureBox = new System.Windows.Forms.PictureBox();
             this.openFileDlg = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDlg = new System.Windows.Forms.SaveFileDialog();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.undoBtn = new System.Windows.Forms.Button();
+            this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.panelImage = new System.Windows.Forms.Panel();
             this.groupBox1.SuspendLayout();
             this.groupBoxOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).BeginInit();
             this.toolStrip1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            this.panelImage.SuspendLayout();
             this.SuspendLayout();
             // 
             // listPlugins
@@ -72,9 +72,9 @@ namespace VSTImage
             this.NameHdr,
             this.VendorHdr});
             this.listPlugins.HideSelection = false;
-            this.listPlugins.Location = new System.Drawing.Point(6, 22);
+            this.listPlugins.Location = new System.Drawing.Point(6, 17);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(313, 314);
+            this.listPlugins.Size = new System.Drawing.Size(313, 319);
             this.listPlugins.TabIndex = 0;
             this.listPlugins.TabStop = false;
             this.listPlugins.UseCompatibleStateImageBehavior = false;
@@ -102,14 +102,13 @@ namespace VSTImage
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox1.Controls.Add(this.groupBoxOptions);
             this.groupBox1.Controls.Add(this.listPlugins);
             this.groupBox1.Location = new System.Drawing.Point(12, 28);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(325, 523);
+            this.groupBox1.Size = new System.Drawing.Size(337, 523);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Plugins";
@@ -134,7 +133,16 @@ namespace VSTImage
             this.groupBoxOptions.TabIndex = 3;
             this.groupBoxOptions.TabStop = false;
             this.groupBoxOptions.Text = "Plugin processing options";
-            this.groupBoxOptions.Enter += new System.EventHandler(this.groupBox3_Enter);
+            // 
+            // undoBtn
+            // 
+            this.undoBtn.Location = new System.Drawing.Point(134, 145);
+            this.undoBtn.Name = "undoBtn";
+            this.undoBtn.Size = new System.Drawing.Size(74, 22);
+            this.undoBtn.TabIndex = 13;
+            this.undoBtn.Text = "Undo";
+            this.undoBtn.UseVisualStyleBackColor = true;
+            this.undoBtn.Click += new System.EventHandler(this.undoBtn_Click);
             // 
             // removePlugBtn
             // 
@@ -155,7 +163,6 @@ namespace VSTImage
             this.label4.Size = new System.Drawing.Size(35, 14);
             this.label4.TabIndex = 11;
             this.label4.Text = "Wet:";
-            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // trackWet
             // 
@@ -245,8 +252,8 @@ namespace VSTImage
             this.toolStrip1.AllowItemReorder = true;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolOpenImageBtn,
-            this.toolAddVstBtn,
             this.toolSaveimgBtn,
+            this.toolAddVstBtn,
             this.toolApplyBtn,
             this.progressProcessing});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
@@ -264,15 +271,6 @@ namespace VSTImage
             this.toolOpenImageBtn.Text = "Open image";
             this.toolOpenImageBtn.Click += new System.EventHandler(this.toolOpenImageBtn_Click);
             // 
-            // toolAddVstBtn
-            // 
-            this.toolAddVstBtn.Image = global::VSTImage.Properties.Resources.plug;
-            this.toolAddVstBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolAddVstBtn.Name = "toolAddVstBtn";
-            this.toolAddVstBtn.Size = new System.Drawing.Size(97, 22);
-            this.toolAddVstBtn.Text = "Add VST FX";
-            this.toolAddVstBtn.Click += new System.EventHandler(this.toolAddVstBtn_Click);
-            // 
             // toolSaveimgBtn
             // 
             this.toolSaveimgBtn.Enabled = false;
@@ -281,6 +279,15 @@ namespace VSTImage
             this.toolSaveimgBtn.Name = "toolSaveimgBtn";
             this.toolSaveimgBtn.Size = new System.Drawing.Size(97, 22);
             this.toolSaveimgBtn.Text = "Save image";
+            // 
+            // toolAddVstBtn
+            // 
+            this.toolAddVstBtn.Image = global::VSTImage.Properties.Resources.plug;
+            this.toolAddVstBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolAddVstBtn.Name = "toolAddVstBtn";
+            this.toolAddVstBtn.Size = new System.Drawing.Size(97, 22);
+            this.toolAddVstBtn.Text = "Add VST FX";
+            this.toolAddVstBtn.Click += new System.EventHandler(this.toolAddVstBtn_Click);
             // 
             // toolApplyBtn
             // 
@@ -297,32 +304,6 @@ namespace VSTImage
             this.progressProcessing.Name = "progressProcessing";
             this.progressProcessing.Size = new System.Drawing.Size(100, 22);
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.pictureBox);
-            this.groupBox2.Location = new System.Drawing.Point(343, 28);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(565, 523);
-            this.groupBox2.TabIndex = 5;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Image";
-            // 
-            // pictureBox
-            // 
-            this.pictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox.ErrorImage = global::VSTImage.Properties.Resources.empty;
-            this.pictureBox.InitialImage = global::VSTImage.Properties.Resources.empty;
-            this.pictureBox.Location = new System.Drawing.Point(6, 22);
-            this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(553, 495);
-            this.pictureBox.TabIndex = 0;
-            this.pictureBox.TabStop = false;
-            // 
             // openFileDlg
             // 
             this.openFileDlg.FileName = "openFileDialog1";
@@ -334,25 +315,39 @@ namespace VSTImage
             this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
-            // undoBtn
+            // pictureBox
             // 
-            this.undoBtn.Location = new System.Drawing.Point(134, 145);
-            this.undoBtn.Name = "undoBtn";
-            this.undoBtn.Size = new System.Drawing.Size(74, 22);
-            this.undoBtn.TabIndex = 13;
-            this.undoBtn.Text = "Undo";
-            this.undoBtn.UseVisualStyleBackColor = true;
-            this.undoBtn.Click += new System.EventHandler(this.undoBtn_Click);
+            this.pictureBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox.ErrorImage = global::VSTImage.Properties.Resources.empty;
+            this.pictureBox.InitialImage = global::VSTImage.Properties.Resources.empty;
+            this.pictureBox.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox.Name = "pictureBox";
+            this.pictureBox.Size = new System.Drawing.Size(553, 517);
+            this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictureBox.TabIndex = 0;
+            this.pictureBox.TabStop = false;
             // 
-            // Form1
+            // panelImage
+            // 
+            this.panelImage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelImage.AutoScroll = true;
+            this.panelImage.Controls.Add(this.pictureBox);
+            this.panelImage.Location = new System.Drawing.Point(355, 28);
+            this.panelImage.Name = "panelImage";
+            this.panelImage.Size = new System.Drawing.Size(565, 523);
+            this.panelImage.TabIndex = 5;
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(920, 555);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.panelImage);
             this.Controls.Add(this.groupBox1);
-            this.Name = "Form1";
+            this.Controls.Add(this.toolStrip1);
+            this.Name = "MainForm";
             this.Text = "VSTImage";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -362,8 +357,9 @@ namespace VSTImage
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).EndInit();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            this.panelImage.ResumeLayout(false);
+            this.panelImage.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -378,8 +374,6 @@ namespace VSTImage
         private System.Windows.Forms.ToolStripButton toolOpenImageBtn;
         private System.Windows.Forms.ToolStripButton toolSaveimgBtn;
         private System.Windows.Forms.ToolStripButton toolAddVstBtn;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.ToolStripButton toolApplyBtn;
         private System.Windows.Forms.OpenFileDialog openFileDlg;
         private System.Windows.Forms.SaveFileDialog saveFileDlg;
@@ -398,6 +392,8 @@ namespace VSTImage
         private System.ComponentModel.BackgroundWorker backgroundWorker;
         private System.Windows.Forms.ToolStripProgressBar progressProcessing;
         private System.Windows.Forms.Button undoBtn;
+        private System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.Panel panelImage;
     }
 }
 
