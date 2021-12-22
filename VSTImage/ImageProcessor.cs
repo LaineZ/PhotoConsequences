@@ -68,12 +68,6 @@ namespace VSTImage
         /// </returns>
         public Bitmap ProcessImage(Bitmap image)
         {
-            // plugin does not support processing audio
-            if ((ChainedPlugin.PluginContext.PluginInfo.Flags & VstPluginFlags.CanReplacing) == 0)
-            {
-                throw new InvalidOperationException("This plugin is not a effect");
-            }
-
             Bitmap outputImage = (Bitmap)image.Clone();
             GraphicsUnit units = GraphicsUnit.Pixel;
             RectangleF size = outputImage.GetBounds(ref units);
@@ -86,6 +80,8 @@ namespace VSTImage
             using VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize);
             using VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize);
 
+            var rng = new Random();
+
             foreach (VstAudioBuffer buffer in inputMgr.Buffers)
             {
                 var span = buffer.AsSpan();
@@ -94,7 +90,22 @@ namespace VSTImage
                 {
                     for (int y = 0; y < size.Height; y++)
                     {
-                        span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetBrightness();
+                        if (ChainedPlugin.Input == Channel.Value)
+                        {
+                            span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetBrightness();
+                        }
+                        if (ChainedPlugin.Input == Channel.Saturation)
+                        {
+                            span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetSaturation();
+                        }
+                        if (ChainedPlugin.Input == Channel.Hue)
+                        {
+                            span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetHue();
+                        }
+                        if (ChainedPlugin.Input == Channel.Random)
+                        {
+                            span[(int)size.Width * y + x] = (float)rng.NextDouble();
+                        }
                     }
                 }
             }

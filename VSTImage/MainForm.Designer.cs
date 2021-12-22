@@ -35,6 +35,8 @@ namespace VSTImage
             this.openPluginEditorBtn = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
+            this.inputBox = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.undoBtn = new System.Windows.Forms.Button();
             this.removePlugBtn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
@@ -116,6 +118,8 @@ namespace VSTImage
             // groupBoxOptions
             // 
             this.groupBoxOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBoxOptions.Controls.Add(this.inputBox);
+            this.groupBoxOptions.Controls.Add(this.label5);
             this.groupBoxOptions.Controls.Add(this.undoBtn);
             this.groupBoxOptions.Controls.Add(this.removePlugBtn);
             this.groupBoxOptions.Controls.Add(this.label4);
@@ -133,6 +137,31 @@ namespace VSTImage
             this.groupBoxOptions.TabIndex = 3;
             this.groupBoxOptions.TabStop = false;
             this.groupBoxOptions.Text = "Plugin processing options";
+            // 
+            // inputBox
+            // 
+            this.inputBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.inputBox.Enabled = false;
+            this.inputBox.FormattingEnabled = true;
+            this.inputBox.Items.AddRange(new object[] {
+            "Hue",
+            "Saturation",
+            "Value",
+            "Random"});
+            this.inputBox.Location = new System.Drawing.Point(118, 19);
+            this.inputBox.Name = "inputBox";
+            this.inputBox.Size = new System.Drawing.Size(177, 22);
+            this.inputBox.TabIndex = 15;
+            this.inputBox.SelectedIndexChanged += new System.EventHandler(this.inputBox_SelectedIndexChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(7, 22);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(105, 14);
+            this.label5.TabIndex = 14;
+            this.label5.Text = "Input channel:";
             // 
             // undoBtn
             // 
@@ -158,7 +187,7 @@ namespace VSTImage
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 52);
+            this.label4.Location = new System.Drawing.Point(10, 82);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(35, 14);
             this.label4.TabIndex = 11;
@@ -167,7 +196,7 @@ namespace VSTImage
             // trackWet
             // 
             this.trackWet.Enabled = false;
-            this.trackWet.Location = new System.Drawing.Point(39, 44);
+            this.trackWet.Location = new System.Drawing.Point(39, 74);
             this.trackWet.Maximum = 100;
             this.trackWet.Name = "trackWet";
             this.trackWet.Size = new System.Drawing.Size(256, 45);
@@ -184,7 +213,7 @@ namespace VSTImage
             "Left",
             "Right",
             "None"});
-            this.sBox.Location = new System.Drawing.Point(134, 16);
+            this.sBox.Location = new System.Drawing.Point(134, 46);
             this.sBox.Name = "sBox";
             this.sBox.Size = new System.Drawing.Size(64, 22);
             this.sBox.TabIndex = 9;
@@ -199,7 +228,7 @@ namespace VSTImage
             "Left",
             "Right",
             "None"});
-            this.vBox.Location = new System.Drawing.Point(231, 16);
+            this.vBox.Location = new System.Drawing.Point(231, 46);
             this.vBox.Name = "vBox";
             this.vBox.Size = new System.Drawing.Size(64, 22);
             this.vBox.TabIndex = 8;
@@ -208,7 +237,7 @@ namespace VSTImage
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(204, 19);
+            this.label3.Location = new System.Drawing.Point(204, 49);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(21, 14);
             this.label3.TabIndex = 7;
@@ -217,7 +246,7 @@ namespace VSTImage
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(107, 19);
+            this.label2.Location = new System.Drawing.Point(107, 49);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(21, 14);
             this.label2.TabIndex = 5;
@@ -232,7 +261,7 @@ namespace VSTImage
             "Left",
             "Right",
             "None"});
-            this.hBox.Location = new System.Drawing.Point(37, 16);
+            this.hBox.Location = new System.Drawing.Point(37, 46);
             this.hBox.Name = "hBox";
             this.hBox.Size = new System.Drawing.Size(64, 22);
             this.hBox.TabIndex = 4;
@@ -241,7 +270,7 @@ namespace VSTImage
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 19);
+            this.label1.Location = new System.Drawing.Point(10, 49);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(21, 14);
             this.label1.TabIndex = 3;
@@ -279,6 +308,7 @@ namespace VSTImage
             this.toolSaveimgBtn.Name = "toolSaveimgBtn";
             this.toolSaveimgBtn.Size = new System.Drawing.Size(97, 22);
             this.toolSaveimgBtn.Text = "Save image";
+            this.toolSaveimgBtn.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
             // 
             // toolAddVstBtn
             // 
@@ -394,6 +424,8 @@ namespace VSTImage
         private System.Windows.Forms.Button undoBtn;
         private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.Panel panelImage;
+        private System.Windows.Forms.ComboBox inputBox;
+        private System.Windows.Forms.Label label5;
     }
 }
 

@@ -54,27 +54,24 @@ namespace VSTImage
         {
             if (listPlugins.SelectedItems.Count > 0)
             {
-                hBox.Enabled = true;
-                vBox.Enabled = true;
-                sBox.Enabled = true;
-                trackWet.Enabled = true;
-                openPluginEditorBtn.Enabled = true;
-                removePlugBtn.Enabled = true;
+                foreach (Control item in groupBoxOptions.Controls)
+                {
+                    item.Enabled = true;
+                }
 
                 var selection = _plugins[listPlugins.SelectedItems[0].Index];
 
                 hBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Hue];
                 sBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Saturation];
                 vBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Value];
+                inputBox.SelectedIndex = (int)selection.Input;
             }
             else
             {
-                hBox.Enabled = false;
-                vBox.Enabled = false;
-                sBox.Enabled = false;
-                trackWet.Enabled = false;
-                openPluginEditorBtn.Enabled = false;
-                removePlugBtn.Enabled = false;
+                foreach (Control item in groupBoxOptions.Controls)
+                {
+                    item.Enabled = false;
+                }
             }
         }
 
@@ -103,43 +100,6 @@ namespace VSTImage
             openPluginEditorBtn.Enabled = _plugins.Any();
         }
 
-        private VstPluginContext OpenPlugin(string pluginPath)
-        {
-            try
-            {
-                HostCommandStub hostCmdStub = new HostCommandStub();
-                hostCmdStub.PluginCalled += new EventHandler<PluginCalledEventArgs>(HostCmdStub_PluginCalled);
-
-                VstPluginContext ctx = VstPluginContext.Create(pluginPath, hostCmdStub);
-
-                // add custom data to the context
-                ctx.Set("PluginPath", pluginPath);
-                ctx.Set("HostCmdStub", hostCmdStub);
-
-                // actually open the plugin itself
-                ctx.PluginCommandStub.Commands.Open();
-
-                return ctx;
-            }
-            catch (BadImageFormatException e)
-            {
-                Log.Error("Failed to open VST: {0}", e.ToString());
-                MessageBox.Show(this, $"This VSTImage build can open only {GetArch()} plugin.", $"{pluginPath}: Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (EntryPointNotFoundException e)
-            {
-                Log.Error("Failed to open VST: {0}", e.ToString());
-                MessageBox.Show(this, $"This dll file is not a VST Plugin.", $"{pluginPath}: Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception e)
-            {
-                Log.Error("Failed to open VST: {0}", e.ToString());
-                MessageBox.Show(this, e.ToString(), "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return null;
-        }
-
         private void ShowEditor(VstPluginContext PluginContext)
         {
             EditorFrame dlg = new EditorFrame
@@ -152,35 +112,6 @@ namespace VSTImage
             PluginContext.PluginCommandStub.Commands.MainsChanged(false);
         }
 
-        private VstPluginContext SelectedPluginContext
-        {
-            get
-            {
-                if (listPlugins.SelectedItems.Count > 0)
-                {
-                    return (VstPluginContext)listPlugins.SelectedItems[0].Tag;
-                }
-
-                return null;
-            }
-        }
-
-
-        private void HostCmdStub_PluginCalled(object sender, PluginCalledEventArgs e)
-        {
-            HostCommandStub hostCmdStub = (HostCommandStub)sender;
-
-            // can be null when called from inside the plugin main entry point.
-            if (hostCmdStub.PluginContext.PluginInfo != null)
-            {
-                Log.Verbose("Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.Message);
-            }
-            else
-            {
-                Log.Verbose("The loading Plugin called:" + e.Message);
-            }
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
 
@@ -190,15 +121,36 @@ namespace VSTImage
         {
             openFileDlg.Filter = $"VST {GetArch()} 2.4 Plugins(*.dll)|*.dll";
 
-
             if (openFileDlg.ShowDialog(this) == DialogResult.OK)
             {
-                VstPluginContext ctx = OpenPlugin(openFileDlg.FileName);
-
-                if (ctx != null)
+                try
                 {
-                    _plugins.Add(new PluginChain(ctx));
-                    FillPluginList();
+                    var plugin = new PluginChain(openFileDlg.FileName);
+
+                    if (plugin.PluginContext != null)
+                    {
+                        _plugins.Add(plugin);
+                        FillPluginList();
+                    }
+                    else
+                    {
+                        MessageBox.Show(this, "Failed to create plugin context", openFileDlg.FileName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (BadImageFormatException ex)
+                {
+                    Log.Error("Failed to open VST: {0}", ex.ToString());
+                    MessageBox.Show(this, $"This VSTImage build can open only {GetArch()} plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (EntryPointNotFoundException ex)
+                {
+                    Log.Error("Failed to open VST: {0}", ex.ToString());
+                    MessageBox.Show(this, $"This dll file is not a VST Plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Failed to open VST: {0}", ex.ToString());
+                    MessageBox.Show(this, e.ToString(), "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -226,6 +178,16 @@ namespace VSTImage
                 try
                 {
                     var img = new Bitmap(openFileDlg.FileName);
+
+                    Log.Information("Opened a image with: {0} pixel format", img.PixelFormat);
+
+                    if (img.PixelFormat is System.Drawing.Imaging.PixelFormat.Indexed or System.Drawing.Imaging.PixelFormat.Format1bppIndexed or
+                        System.Drawing.Imaging.PixelFormat.Format4bppIndexed or System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                    {
+                        MessageBox.Show(this, "This image have a indexed pixel format - processing unsupported", openFileDlg.FileName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
                     Images.Clear();
                     Images.Add(img);
                 }
@@ -291,6 +253,12 @@ namespace VSTImage
             _plugins[selected].Dry = trackWet.Value / 100; 
         }
 
+        private void inputBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selected = listPlugins.SelectedItems[0].Index;
+            _plugins[selected].Input = (Channel)vBox.SelectedIndex;
+        }
+
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var complete = 0;
@@ -332,6 +300,23 @@ namespace VSTImage
             }
 
             SetImageControls();
+        }
+
+        private void toolSaveimgBtn_Click(object sender, EventArgs e)
+        {
+            saveFileDlg.Filter = "Bitmap file(*.BMP)|*.BMP|Portable Network Graphics(*.PNG)|*.PNG|JPEG(*.JPEG)|*.jpg";
+
+            if (saveFileDlg.ShowDialog(this) == DialogResult.OK)
+            {
+                try
+                {
+                    Images.Last().Save(saveFileDlg.FileName);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show($"Saving error: {error.Message}", "Image saving failed!", MessageBoxButtons.OK);
+                }
+            }
         }
     }
 }
