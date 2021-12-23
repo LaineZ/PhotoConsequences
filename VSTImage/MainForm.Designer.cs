@@ -52,7 +52,6 @@ namespace VSTImage
             this.toolSaveimgBtn = new System.Windows.Forms.ToolStripButton();
             this.toolAddVstBtn = new System.Windows.Forms.ToolStripButton();
             this.toolApplyBtn = new System.Windows.Forms.ToolStripButton();
-            this.progressProcessing = new System.Windows.Forms.ToolStripProgressBar();
             this.openFileDlg = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDlg = new System.Windows.Forms.SaveFileDialog();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
@@ -283,8 +282,7 @@ namespace VSTImage
             this.toolOpenImageBtn,
             this.toolSaveimgBtn,
             this.toolAddVstBtn,
-            this.toolApplyBtn,
-            this.progressProcessing});
+            this.toolApplyBtn});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(920, 25);
@@ -328,11 +326,6 @@ namespace VSTImage
             this.toolApplyBtn.Size = new System.Drawing.Size(146, 22);
             this.toolApplyBtn.Text = "Apply FX on image";
             this.toolApplyBtn.Click += new System.EventHandler(this.toolApplyBtn_Click);
-            // 
-            // progressProcessing
-            // 
-            this.progressProcessing.Name = "progressProcessing";
-            this.progressProcessing.Size = new System.Drawing.Size(100, 22);
             // 
             // openFileDlg
             // 
@@ -420,7 +413,6 @@ namespace VSTImage
         private System.Windows.Forms.TrackBar trackWet;
         private System.Windows.Forms.Button removePlugBtn;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
-        private System.Windows.Forms.ToolStripProgressBar progressProcessing;
         private System.Windows.Forms.Button undoBtn;
         private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.Panel panelImage;

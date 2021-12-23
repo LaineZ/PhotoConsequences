@@ -17,6 +17,7 @@ namespace VSTImage
     {
         private List<PluginChain> _plugins = new List<PluginChain>();
         private List<Bitmap> Images = new List<Bitmap>();
+        private ProcessingProgress ProcessingProgress;
 
         public MainForm()
         {
@@ -164,8 +165,15 @@ namespace VSTImage
         {
             if (backgroundWorker.IsBusy != true)
             {
-                // Start the asynchronous operation.
+                Images.RemoveRange(1, Images.Count - 1);
                 backgroundWorker.RunWorkerAsync();
+                foreach (ToolStripItem item in toolStrip1.Items)
+                {
+                    Log.Verbose("{0}", item.Name);
+                    item.Enabled = false;
+                }
+                ProcessingProgress = new ProcessingProgress();
+                ProcessingProgress.Show();
             }
         }
 
@@ -262,7 +270,6 @@ namespace VSTImage
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var complete = 0;
-            var max = _plugins.Count;
 
             foreach (var plugin in _plugins)
             {
@@ -271,28 +278,29 @@ namespace VSTImage
                 var image = processor.ProcessImage(Images.Last());
                 Images.Add(image);
                 complete++;
-                backgroundWorker.ReportProgress(complete / max * 100);
+                backgroundWorker.ReportProgress(complete);
             }
         }
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            progressProcessing.Value = e.ProgressPercentage;
+            ProcessingProgress.UpdateProgress($"Effects processed: {e.ProgressPercentage} of {_plugins.Count}");
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             SetImageControls();
+            foreach (ToolStripItem item in toolStrip1.Items)
+            {
+                Log.Verbose("{0}", item.Name);
+                item.Enabled = true;
+            }
+            ProcessingProgress.Close();
+            ProcessingProgress.Dispose();
         }
 
         private void undoBtn_Click(object sender, EventArgs e)
         {
-            int state = 0;
-            foreach (var item in Images)
-            {
-                item.Save($"undostate{state}.png");
-                state++;
-            }
             Log.Verbose("Undo buffer: {0}", Images.Count);
             if (Images.Count > 1)
             {
