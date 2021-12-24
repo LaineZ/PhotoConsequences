@@ -36,10 +36,13 @@ jobs:
         dotnet-version: 5.0.x
 
     - name: Create the app package
-      run: dotnet publish -c Release -p:Platform="x64" -r win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+      run: dotnet publish -c $env:Configuration -p:Platform="x64" -r win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+    
+    - name: View build directory
+      run: tree .\VSTImage\VSTImage\bin
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: VSTImageWinX64
-        path: ./VSTImage/VSTImage/bin/x64/Release/net5.0-windows/win-x64/publish
+        path: .\VSTImage\VSTImage\bin\x64\Release\net5.0-windows\win-x64\publish
