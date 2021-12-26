@@ -274,7 +274,7 @@ namespace VSTImage
             foreach (var plugin in _plugins)
             {
                 Log.Information("Proccessing image...");
-                ImageProcessor processor = new ImageProcessor(plugin);
+                ImageProcessor processor = new ImageProcessor(plugin, (float)sampleRateInput.Value);
                 var image = processor.ProcessImage(Images.Last());
                 Images.Add(image);
                 complete++;

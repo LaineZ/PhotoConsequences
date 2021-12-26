@@ -57,12 +57,15 @@ namespace VSTImage
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.panelImage = new System.Windows.Forms.Panel();
+            this.sampleRateInput = new System.Windows.Forms.NumericUpDown();
+            this.label6 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBoxOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.panelImage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).BeginInit();
             this.SuspendLayout();
             // 
             // listPlugins
@@ -117,6 +120,8 @@ namespace VSTImage
             // groupBoxOptions
             // 
             this.groupBoxOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBoxOptions.Controls.Add(this.label6);
+            this.groupBoxOptions.Controls.Add(this.sampleRateInput);
             this.groupBoxOptions.Controls.Add(this.inputBox);
             this.groupBoxOptions.Controls.Add(this.label5);
             this.groupBoxOptions.Controls.Add(this.undoBtn);
@@ -212,7 +217,7 @@ namespace VSTImage
             "Left",
             "Right",
             "None"});
-            this.sBox.Location = new System.Drawing.Point(134, 46);
+            this.sBox.Location = new System.Drawing.Point(134, 47);
             this.sBox.Name = "sBox";
             this.sBox.Size = new System.Drawing.Size(64, 22);
             this.sBox.TabIndex = 9;
@@ -227,7 +232,7 @@ namespace VSTImage
             "Left",
             "Right",
             "None"});
-            this.vBox.Location = new System.Drawing.Point(231, 46);
+            this.vBox.Location = new System.Drawing.Point(231, 47);
             this.vBox.Name = "vBox";
             this.vBox.Size = new System.Drawing.Size(64, 22);
             this.vBox.TabIndex = 8;
@@ -236,7 +241,7 @@ namespace VSTImage
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(204, 49);
+            this.label3.Location = new System.Drawing.Point(204, 50);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(21, 14);
             this.label3.TabIndex = 7;
@@ -245,7 +250,7 @@ namespace VSTImage
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(107, 49);
+            this.label2.Location = new System.Drawing.Point(107, 50);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(21, 14);
             this.label2.TabIndex = 5;
@@ -260,7 +265,7 @@ namespace VSTImage
             "Left",
             "Right",
             "None"});
-            this.hBox.Location = new System.Drawing.Point(37, 46);
+            this.hBox.Location = new System.Drawing.Point(37, 47);
             this.hBox.Name = "hBox";
             this.hBox.Size = new System.Drawing.Size(64, 22);
             this.hBox.TabIndex = 4;
@@ -269,7 +274,7 @@ namespace VSTImage
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 49);
+            this.label1.Location = new System.Drawing.Point(10, 50);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(21, 14);
             this.label1.TabIndex = 3;
@@ -362,6 +367,37 @@ namespace VSTImage
             this.panelImage.Size = new System.Drawing.Size(565, 523);
             this.panelImage.TabIndex = 5;
             // 
+            // sampleRateInput
+            // 
+            this.sampleRateInput.Location = new System.Drawing.Point(105, 103);
+            this.sampleRateInput.Maximum = new decimal(new int[] {
+            192000,
+            0,
+            0,
+            0});
+            this.sampleRateInput.Minimum = new decimal(new int[] {
+            22005,
+            0,
+            0,
+            0});
+            this.sampleRateInput.Name = "sampleRateInput";
+            this.sampleRateInput.Size = new System.Drawing.Size(120, 23);
+            this.sampleRateInput.TabIndex = 16;
+            this.sampleRateInput.Value = new decimal(new int[] {
+            44100,
+            0,
+            0,
+            0});
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(10, 105);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(91, 14);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "Sample rate:";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
@@ -383,6 +419,7 @@ namespace VSTImage
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.panelImage.ResumeLayout(false);
             this.panelImage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -418,6 +455,8 @@ namespace VSTImage
         private System.Windows.Forms.Panel panelImage;
         private System.Windows.Forms.ComboBox inputBox;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown sampleRateInput;
     }
 }
 

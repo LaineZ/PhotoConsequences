@@ -70,7 +70,7 @@ namespace VSTImage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(653, 94);
+            this.ClientSize = new System.Drawing.Size(420, 94);
             this.Controls.Add(this.labelProgress);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
