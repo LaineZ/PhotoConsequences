@@ -1,10 +1,14 @@
 ﻿using Jacobi.Vst.Host.Interop;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,7 +19,7 @@ namespace VSTImage
 {
     public partial class MainForm : Form
     {
-        private List<PluginChain> _plugins = new List<PluginChain>();
+        private List<InsertedPlugin> _plugins = new List<InsertedPlugin>();
         private List<Bitmap> Images = new List<Bitmap>();
         private ProcessingProgress ProcessingProgress;
 
@@ -34,20 +38,122 @@ namespace VSTImage
             }
 
             _plugins.Clear();
+            listPlugins.Items.Clear();
+        }
+
+        private void SaveProject(string path)
+        {
+            foreach (var ctx in _plugins) { ctx.SetState(); }
+            if (File.Exists(path)) { File.Delete(path); }
+
+            var pluginState = JsonConvert.SerializeObject(_plugins);
+
+            using (FileStream zipToOpen = new FileStream(path, FileMode.OpenOrCreate))
+            {
+                using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update))
+                {
+                    ZipArchiveEntry projEntry = archive.CreateEntry("project.json");
+                    using (StreamWriter writer = new StreamWriter(projEntry.Open()))
+                    {
+                        writer.Write(pluginState);
+                    }
+                }
+            }
+
+            using (FileStream zipToOpen = new FileStream(path, FileMode.Open))
+            {
+                using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update))
+                {
+                    ZipArchiveEntry projEntry = archive.CreateEntry("image.png");
+                    using (StreamWriter writer = new StreamWriter(projEntry.Open()))
+                    {
+                        Images.Last().Save(writer.BaseStream, ImageFormat.Png);
+                    }
+                }
+
+                zipToOpen.Close();
+                zipToOpen.Dispose();
+            }
+        }
+
+        private void AddVST(InsertedPlugin plugin)
+        {
+            try
+            {
+                plugin.CreatePluginContext();
+
+                if (plugin.PluginContext != null)
+                {
+                    _plugins.Add(plugin);
+                    FillPluginList();
+                }
+                else
+                {
+                    MessageBox.Show(this, "Failed to create plugin context", openFileDlg.FileName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (BadImageFormatException ex)
+            {
+                Log.Error("Failed to open VST: {0}", ex.ToString());
+                MessageBox.Show(this, $"This VSTImage build can open only {Utils.GetArch()} plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (EntryPointNotFoundException ex)
+            {
+                Log.Error("Failed to open VST: {0}", ex.ToString());
+                MessageBox.Show(this, $"This dll file is not a VST Plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to open VST: {0}", ex.ToString());
+                MessageBox.Show(this, ex.ToString(), "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadProject(string path)
+        {
+            DestroyWorkspace();
+
+            using (ZipArchive zip = ZipFile.Open(path, ZipArchiveMode.Read))
+            {
+                var projFile = zip.GetEntry("project.json");
+
+                using (StreamReader s = new StreamReader(projFile.Open()))
+                {
+                    
+                    List<InsertedPlugin> restoredPlugins = JsonConvert.DeserializeObject<List<InsertedPlugin>>(s.ReadToEnd());
+                    foreach (var item in restoredPlugins)
+                    {
+                        AddVST(item);
+                    }
+                }
+
+                var imgFile = zip.GetEntry("image.png");
+
+                using (StreamReader s = new StreamReader(imgFile.Open()))
+                {
+                    Images.Add((Bitmap)Image.FromStream(s.BaseStream));
+                }
+
+                zip.Dispose();
+            }
         }
 
         private void SetImageControls()
         {
+            Log.Verbose("Image count: {0}", Images.Count);
             if (Images.Any() && Images.Last() != null)
             {
                 toolApplyBtn.Enabled = true;
                 toolSaveimgBtn.Enabled = true;
+                saveProjBtn.Enabled = true;
                 pictureBox.Image = Images.Last();
             }
             else
             {
                 toolApplyBtn.Enabled = false;
                 toolSaveimgBtn.Enabled = false;
+                saveProjBtn.Enabled = false;
+                pictureBox.Image = null;
             }
         }
 
@@ -76,10 +182,14 @@ namespace VSTImage
             }
         }
 
-        private ProcessorArchitecture GetArch()
+        private void DestroyImages()
         {
-            Assembly currentAssem = Assembly.GetExecutingAssembly();
-            return currentAssem.GetName().ProcessorArchitecture;
+            foreach (var item in Images)
+            {
+                item.Dispose();
+            }
+            Images.Clear();
+            SetImageControls();
         }
 
         private void FillPluginList()
@@ -101,64 +211,29 @@ namespace VSTImage
             openPluginEditorBtn.Enabled = _plugins.Any();
         }
 
-        private void ShowEditor(VstPluginContext PluginContext)
+        private void DestroyWorkspace()
         {
-            EditorFrame dlg = new EditorFrame
-            {
-                PluginCommandStub = PluginContext.PluginCommandStub
-            };
-
-            PluginContext.PluginCommandStub.Commands.MainsChanged(true);
-            dlg.ShowDialog(this);
-            PluginContext.PluginCommandStub.Commands.MainsChanged(false);
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
+            Log.Verbose("Closing project..");
+            ReleaseAllPlugins();
+            SetPluginControls();
+            DestroyImages();
+            GC.Collect();
         }
 
         private void toolAddVstBtn_Click(object sender, EventArgs e)
         {
-            openFileDlg.Filter = $"VST {GetArch()} 2.4 Plugins(*.dll)|*.dll";
+            openFileDlg.Filter = $"VST {Utils.GetArch()} 2.4 Plugins(*.dll)|*.dll";
 
             if (openFileDlg.ShowDialog(this) == DialogResult.OK)
             {
-                try
-                {
-                    var plugin = new PluginChain(openFileDlg.FileName);
-
-                    if (plugin.PluginContext != null)
-                    {
-                        _plugins.Add(plugin);
-                        FillPluginList();
-                    }
-                    else
-                    {
-                        MessageBox.Show(this, "Failed to create plugin context", openFileDlg.FileName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                catch (BadImageFormatException ex)
-                {
-                    Log.Error("Failed to open VST: {0}", ex.ToString());
-                    MessageBox.Show(this, $"This VSTImage build can open only {GetArch()} plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (EntryPointNotFoundException ex)
-                {
-                    Log.Error("Failed to open VST: {0}", ex.ToString());
-                    MessageBox.Show(this, $"This dll file is not a VST Plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Failed to open VST: {0}", ex.ToString());
-                    MessageBox.Show(this, e.ToString(), "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                var plugin = new InsertedPlugin(openFileDlg.FileName);
+                AddVST(plugin);
             }
         }
 
         private void openPluginEditorBtn_Click(object sender, EventArgs e)
         {
-            ShowEditor(_plugins[listPlugins.SelectedItems[0].Index].PluginContext);
+            _plugins[listPlugins.SelectedItems[0].Index].ShowEditor(this);
         }
 
         private void toolApplyBtn_Click(object sender, EventArgs e)
@@ -258,7 +333,7 @@ namespace VSTImage
         private void trackWet_ValueChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            _plugins[selected].Dry = trackWet.Value / 100; 
+            _plugins[selected].Wet = trackWet.Value / 100; 
         }
 
         private void inputBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -322,9 +397,59 @@ namespace VSTImage
                 }
                 catch (Exception error)
                 {
-                    MessageBox.Show($"Saving error: {error.Message}", "Image saving failed!", MessageBoxButtons.OK);
+                    MessageBox.Show($"Saving error: {error.Message}", "Image saving failed!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void newProjectBtn_Click(object sender, EventArgs e)
+        {
+            if (Images.Any() && _plugins.Any())
+            {
+                // TODO: Save confirmation
+            }
+            else
+            {
+                DestroyWorkspace();
+            }
+        }
+
+        private void saveProjBtn_Click(object sender, EventArgs e)
+        {
+            saveFileDlg.Filter = "VSTImage project file(*.viproj)|*.viproj";
+
+            if (saveFileDlg.ShowDialog(this) == DialogResult.OK)
+            {
+                try
+                {
+                    SaveProject(saveFileDlg.FileName);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show($"Saving error: {error.Message}", "Project saving failed!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void loadProjBtn_Click(object sender, EventArgs e)
+        {
+            openFileDlg.Filter = "VSTImage project file(*.viproj)|*.viproj";
+
+            if (openFileDlg.ShowDialog(this) == DialogResult.OK)
+            {
+                try
+                {
+                    LoadProject(openFileDlg.FileName);
+                }
+                catch (Exception error)
+                {
+                    Log.Error("{0}", error);
+                    MessageBox.Show($"Project loaded with errors: {error.Message}", "Project loading", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            SetPluginControls();
+            SetImageControls();
         }
     }
 }

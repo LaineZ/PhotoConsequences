@@ -32,9 +32,12 @@ namespace VSTImage
             this.listPlugins = new System.Windows.Forms.ListView();
             this.NameHdr = new System.Windows.Forms.ColumnHeader();
             this.VendorHdr = new System.Windows.Forms.ColumnHeader();
+            this.ProductHdr = new System.Windows.Forms.ColumnHeader();
             this.openPluginEditorBtn = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.sampleRateInput = new System.Windows.Forms.NumericUpDown();
             this.inputBox = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.undoBtn = new System.Windows.Forms.Button();
@@ -48,6 +51,9 @@ namespace VSTImage
             this.hBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.newProjectBtn = new System.Windows.Forms.ToolStripButton();
+            this.loadProjBtn = new System.Windows.Forms.ToolStripButton();
+            this.saveProjBtn = new System.Windows.Forms.ToolStripButton();
             this.toolOpenImageBtn = new System.Windows.Forms.ToolStripButton();
             this.toolSaveimgBtn = new System.Windows.Forms.ToolStripButton();
             this.toolAddVstBtn = new System.Windows.Forms.ToolStripButton();
@@ -57,15 +63,13 @@ namespace VSTImage
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.panelImage = new System.Windows.Forms.Panel();
-            this.sampleRateInput = new System.Windows.Forms.NumericUpDown();
-            this.label6 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBoxOptions.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.panelImage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).BeginInit();
             this.SuspendLayout();
             // 
             // listPlugins
@@ -74,11 +78,12 @@ namespace VSTImage
             | System.Windows.Forms.AnchorStyles.Left)));
             this.listPlugins.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.NameHdr,
-            this.VendorHdr});
+            this.VendorHdr,
+            this.ProductHdr});
             this.listPlugins.HideSelection = false;
             this.listPlugins.Location = new System.Drawing.Point(6, 17);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(313, 319);
+            this.listPlugins.Size = new System.Drawing.Size(313, 268);
             this.listPlugins.TabIndex = 0;
             this.listPlugins.TabStop = false;
             this.listPlugins.UseCompatibleStateImageBehavior = false;
@@ -92,6 +97,10 @@ namespace VSTImage
             // VendorHdr
             // 
             this.VendorHdr.Text = "Vendor";
+            // 
+            // ProductHdr
+            // 
+            this.ProductHdr.Text = "Product";
             // 
             // openPluginEditorBtn
             // 
@@ -112,7 +121,7 @@ namespace VSTImage
             this.groupBox1.Controls.Add(this.listPlugins);
             this.groupBox1.Location = new System.Drawing.Point(12, 28);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(337, 523);
+            this.groupBox1.Size = new System.Drawing.Size(337, 472);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Plugins";
@@ -135,12 +144,43 @@ namespace VSTImage
             this.groupBoxOptions.Controls.Add(this.label2);
             this.groupBoxOptions.Controls.Add(this.hBox);
             this.groupBoxOptions.Controls.Add(this.label1);
-            this.groupBoxOptions.Location = new System.Drawing.Point(6, 342);
+            this.groupBoxOptions.Location = new System.Drawing.Point(6, 291);
             this.groupBoxOptions.Name = "groupBoxOptions";
             this.groupBoxOptions.Size = new System.Drawing.Size(313, 173);
             this.groupBoxOptions.TabIndex = 3;
             this.groupBoxOptions.TabStop = false;
             this.groupBoxOptions.Text = "Plugin processing options";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(10, 105);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(91, 14);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "Sample rate:";
+            // 
+            // sampleRateInput
+            // 
+            this.sampleRateInput.Location = new System.Drawing.Point(105, 103);
+            this.sampleRateInput.Maximum = new decimal(new int[] {
+            192000,
+            0,
+            0,
+            0});
+            this.sampleRateInput.Minimum = new decimal(new int[] {
+            22005,
+            0,
+            0,
+            0});
+            this.sampleRateInput.Name = "sampleRateInput";
+            this.sampleRateInput.Size = new System.Drawing.Size(120, 23);
+            this.sampleRateInput.TabIndex = 16;
+            this.sampleRateInput.Value = new decimal(new int[] {
+            44100,
+            0,
+            0,
+            0});
             // 
             // inputBox
             // 
@@ -284,15 +324,46 @@ namespace VSTImage
             // 
             this.toolStrip1.AllowItemReorder = true;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newProjectBtn,
+            this.loadProjBtn,
+            this.saveProjBtn,
             this.toolOpenImageBtn,
             this.toolSaveimgBtn,
             this.toolAddVstBtn,
             this.toolApplyBtn});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(920, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(944, 25);
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
+            // 
+            // newProjectBtn
+            // 
+            this.newProjectBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.newProjectBtn.Image = global::VSTImage.Properties.Resources.empty;
+            this.newProjectBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.newProjectBtn.Name = "newProjectBtn";
+            this.newProjectBtn.Size = new System.Drawing.Size(23, 22);
+            this.newProjectBtn.Text = "New project";
+            this.newProjectBtn.Click += new System.EventHandler(this.newProjectBtn_Click);
+            // 
+            // loadProjBtn
+            // 
+            this.loadProjBtn.Image = global::VSTImage.Properties.Resources.computer_folder_open;
+            this.loadProjBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.loadProjBtn.Name = "loadProjBtn";
+            this.loadProjBtn.Size = new System.Drawing.Size(111, 22);
+            this.loadProjBtn.Text = "Load project";
+            this.loadProjBtn.Click += new System.EventHandler(this.loadProjBtn_Click);
+            // 
+            // saveProjBtn
+            // 
+            this.saveProjBtn.Image = global::VSTImage.Properties.Resources.card_memory_sd;
+            this.saveProjBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.saveProjBtn.Name = "saveProjBtn";
+            this.saveProjBtn.Size = new System.Drawing.Size(111, 22);
+            this.saveProjBtn.Text = "Save project";
+            this.saveProjBtn.Click += new System.EventHandler(this.saveProjBtn_Click);
             // 
             // toolOpenImageBtn
             // 
@@ -306,11 +377,12 @@ namespace VSTImage
             // toolSaveimgBtn
             // 
             this.toolSaveimgBtn.Enabled = false;
-            this.toolSaveimgBtn.Image = global::VSTImage.Properties.Resources.card_memory_sd;
+            this.toolSaveimgBtn.Image = global::VSTImage.Properties.Resources.processing;
             this.toolSaveimgBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolSaveimgBtn.Name = "toolSaveimgBtn";
-            this.toolSaveimgBtn.Size = new System.Drawing.Size(97, 22);
-            this.toolSaveimgBtn.Text = "Save image";
+            this.toolSaveimgBtn.Size = new System.Drawing.Size(111, 22);
+            this.toolSaveimgBtn.Text = "Export image";
+            this.toolSaveimgBtn.ToolTipText = "Export image";
             this.toolSaveimgBtn.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
             // 
             // toolAddVstBtn
@@ -350,7 +422,7 @@ namespace VSTImage
             this.pictureBox.InitialImage = global::VSTImage.Properties.Resources.empty;
             this.pictureBox.Location = new System.Drawing.Point(3, 3);
             this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(553, 517);
+            this.pictureBox.Size = new System.Drawing.Size(32, 32);
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox.TabIndex = 0;
             this.pictureBox.TabStop = false;
@@ -364,62 +436,30 @@ namespace VSTImage
             this.panelImage.Controls.Add(this.pictureBox);
             this.panelImage.Location = new System.Drawing.Point(355, 28);
             this.panelImage.Name = "panelImage";
-            this.panelImage.Size = new System.Drawing.Size(565, 523);
+            this.panelImage.Size = new System.Drawing.Size(589, 472);
             this.panelImage.TabIndex = 5;
-            // 
-            // sampleRateInput
-            // 
-            this.sampleRateInput.Location = new System.Drawing.Point(105, 103);
-            this.sampleRateInput.Maximum = new decimal(new int[] {
-            192000,
-            0,
-            0,
-            0});
-            this.sampleRateInput.Minimum = new decimal(new int[] {
-            22005,
-            0,
-            0,
-            0});
-            this.sampleRateInput.Name = "sampleRateInput";
-            this.sampleRateInput.Size = new System.Drawing.Size(120, 23);
-            this.sampleRateInput.TabIndex = 16;
-            this.sampleRateInput.Value = new decimal(new int[] {
-            44100,
-            0,
-            0,
-            0});
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 105);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(91, 14);
-            this.label6.TabIndex = 17;
-            this.label6.Text = "Sample rate:";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(920, 555);
+            this.ClientSize = new System.Drawing.Size(944, 504);
             this.Controls.Add(this.panelImage);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.toolStrip1);
             this.Name = "MainForm";
             this.Text = "VSTImage";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBoxOptions.ResumeLayout(false);
             this.groupBoxOptions.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).EndInit();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.panelImage.ResumeLayout(false);
             this.panelImage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -457,6 +497,10 @@ namespace VSTImage
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown sampleRateInput;
+        private System.Windows.Forms.ColumnHeader ProductHdr;
+        private System.Windows.Forms.ToolStripButton newProjectBtn;
+        private System.Windows.Forms.ToolStripButton loadProjBtn;
+        private System.Windows.Forms.ToolStripButton saveProjBtn;
     }
 }
 

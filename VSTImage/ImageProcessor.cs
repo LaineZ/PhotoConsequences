@@ -14,10 +14,10 @@ namespace VSTImage
 {
     class ImageProcessor
     {
-        public PluginChain ChainedPlugin { get; set; }
+        public InsertedPlugin ChainedPlugin { get; set; }
         public float SampleRate { get; }
 
-        public ImageProcessor(PluginChain ctx, float samplerate = 44100)
+        public ImageProcessor(InsertedPlugin ctx, float samplerate = 44100)
         {
             ChainedPlugin = ctx;
             SampleRate = samplerate;
@@ -132,19 +132,19 @@ namespace VSTImage
                     var processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Value];
                     if (processingBuffer < 1)
                     {
-                        value = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Dry;
+                        value = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
                     }
 
                     processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Hue];
                     if (processingBuffer < 1)
                     {
-                        hue = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Dry;
+                        hue = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
                     }
 
                     processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Saturation];
                     if (processingBuffer < 1)
                     {
-                        saturation = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Dry;
+                        saturation = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
                     }
 
                     outputImage.SetPixel(x, y, ColorFromHSV(hue, saturation, value));
