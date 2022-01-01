@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace VSTImage
+namespace PhotoConsequences
 {
     public partial class MainForm : Form
     {
@@ -39,7 +39,7 @@ namespace VSTImage
         {
             if (SavePath == null)
             {
-                saveFileDlg.Filter = "VSTImage project file(*.viproj)|*.viproj";
+                saveFileDlg.Filter = "PhotoConsequences project file(*.viproj)|*.viproj";
                 if (saveFileDlg.ShowDialog(this) == DialogResult.OK)
                 {
                     SavePath = saveFileDlg.FileName;
@@ -143,7 +143,7 @@ namespace VSTImage
 
         private void SetImageControls()
         {
-            Text = "VSTImage " + SavePath ?? "untitled project";
+            Text = "PhotoConsequences " + SavePath ?? "untitled project";
             Log.Verbose("Image count: {0}", Images.Count);
             if (Images.Any() && Images.Last() != null)
             {
@@ -414,7 +414,7 @@ namespace VSTImage
 
         private void loadProjBtn_Click(object sender, EventArgs e)
         {
-            openFileDlg.Filter = "VSTImage project file(*.viproj)|*.viproj";
+            openFileDlg.Filter = "PhotoConsequences project file(*.viproj)|*.viproj";
 
             if (openFileDlg.ShowDialog(this) == DialogResult.OK)
             {
@@ -454,6 +454,12 @@ namespace VSTImage
                 }
                 Images.Clear();
             }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutForm aboutForm = new AboutForm();
+            aboutForm.Show();
         }
     }
 }

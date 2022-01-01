@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace VSTImage
+namespace PhotoConsequences
 {
     public class PluginRack
     {
@@ -37,7 +37,7 @@ namespace VSTImage
             catch (BadImageFormatException ex)
             {
                 Log.Error("Failed to open VST: {0}", ex.ToString());
-                MessageBox.Show($"This VSTImage build can open only {Utils.GetArch()} plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"This PhotoConsequences build can open only {Utils.GetArch()} plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (EntryPointNotFoundException ex)
             {

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace VSTImage
+namespace PhotoConsequences
 {
     /// <summary>
     /// The frame in which a custom plugin editor UI is displayed.

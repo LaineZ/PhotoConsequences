@@ -2,7 +2,7 @@
 using Jacobi.Vst.Core.Host;
 using System;
 
-namespace VSTImage
+namespace PhotoConsequences
 {
     /// <summary>
     /// The HostCommandStub class represents the part of the host that a plugin can call.

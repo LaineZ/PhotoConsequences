@@ -1,5 +1,5 @@
 ﻿
-namespace VSTImage
+namespace PhotoConsequences
 {
     partial class MainForm
     {
@@ -346,7 +346,7 @@ namespace VSTImage
             // toolApplyBtn
             // 
             this.toolApplyBtn.Enabled = false;
-            this.toolApplyBtn.Image = global::VSTImage.Properties.Resources.check_mark_square;
+            this.toolApplyBtn.Image = global::PhotoConsequences.Properties.Resources.check_mark_square;
             this.toolApplyBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolApplyBtn.Name = "toolApplyBtn";
             this.toolApplyBtn.Size = new System.Drawing.Size(146, 22);
@@ -355,7 +355,7 @@ namespace VSTImage
             // 
             // toolAddVstBtn
             // 
-            this.toolAddVstBtn.Image = global::VSTImage.Properties.Resources.plug;
+            this.toolAddVstBtn.Image = global::PhotoConsequences.Properties.Resources.ic_add_18pt;
             this.toolAddVstBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolAddVstBtn.Name = "toolAddVstBtn";
             this.toolAddVstBtn.Size = new System.Drawing.Size(97, 22);
@@ -364,16 +364,15 @@ namespace VSTImage
             // 
             // toolRemoveAllFX
             // 
-            this.toolRemoveAllFX.Image = global::VSTImage.Properties.Resources.empty;
             this.toolRemoveAllFX.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolRemoveAllFX.Name = "toolRemoveAllFX";
-            this.toolRemoveAllFX.Size = new System.Drawing.Size(118, 22);
+            this.toolRemoveAllFX.Size = new System.Drawing.Size(102, 22);
             this.toolRemoveAllFX.Text = "Remove all FX";
             this.toolRemoveAllFX.Click += new System.EventHandler(this.toolRemoveAllFX_Click);
             // 
             // toolOpenImageBtn
             // 
-            this.toolOpenImageBtn.Image = global::VSTImage.Properties.Resources.ic_add_18pt;
+            this.toolOpenImageBtn.Image = global::PhotoConsequences.Properties.Resources.ic_open_in_browser_18pt;
             this.toolOpenImageBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolOpenImageBtn.Name = "toolOpenImageBtn";
             this.toolOpenImageBtn.Size = new System.Drawing.Size(97, 22);
@@ -394,8 +393,6 @@ namespace VSTImage
             // pictureBox
             // 
             this.pictureBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBox.ErrorImage = global::VSTImage.Properties.Resources.empty;
-            this.pictureBox.InitialImage = global::VSTImage.Properties.Resources.empty;
             this.pictureBox.Location = new System.Drawing.Point(3, 3);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(32, 32);
@@ -441,23 +438,26 @@ namespace VSTImage
             // 
             // newToolStripMenuItem
             // 
+            this.newToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.empty;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newProjectBtn_Click);
             // 
             // openToolStripMenuItem
             // 
+            this.openToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.computer_folder_open;
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.loadProjBtn_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Enabled = false;
+            this.saveToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.card_memory_sd;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
@@ -465,7 +465,7 @@ namespace VSTImage
             // 
             this.saveAsToolStripMenuItem.Enabled = false;
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveAsToolStripMenuItem.Text = "Save as...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsProjBtn_Click);
             // 
@@ -473,14 +473,14 @@ namespace VSTImage
             // 
             this.exportToolStripMenuItem.Enabled = false;
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exportToolStripMenuItem.Text = "Export image";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
             // aboutToolStripMenuItem
@@ -488,6 +488,7 @@ namespace VSTImage
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
             this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -500,7 +501,7 @@ namespace VSTImage
             this.Controls.Add(this.menuStrip);
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
-            this.Text = "VSTImage";
+            this.Text = "PhotoConsequences";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBoxOptions.ResumeLayout(false);

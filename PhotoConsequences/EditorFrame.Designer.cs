@@ -1,4 +1,4 @@
-﻿namespace VSTImage
+﻿namespace PhotoConsequences
 {
     partial class EditorFrame
     {

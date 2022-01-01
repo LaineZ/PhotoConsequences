@@ -1,5 +1,5 @@
 ﻿
-namespace VSTImage
+namespace PhotoConsequences
 {
     partial class ProcessingProgress
     {
@@ -38,7 +38,7 @@ namespace VSTImage
             // pictureBox1
             // 
             this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBox1.Image = global::VSTImage.Properties.Resources.processing;
+            this.pictureBox1.Image = global::PhotoConsequences.Properties.Resources.processing;
             this.pictureBox1.Location = new System.Drawing.Point(-1, -1);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(141, 97);

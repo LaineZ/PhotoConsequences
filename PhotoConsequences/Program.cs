@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace VSTImage
+namespace PhotoConsequences
 {
     static class Program
     {
@@ -24,7 +24,7 @@ namespace VSTImage
                 .WriteTo.Console()
                 .MinimumLevel.Verbose()
                 .CreateLogger();
-            Log.Information("VSTImage started!!!");
+            Log.Information("PhotoConsequences started!!!");
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

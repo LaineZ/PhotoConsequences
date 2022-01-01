@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VSTImage
+namespace PhotoConsequences
 {
     public static class Utils
     {
@@ -15,6 +15,12 @@ namespace VSTImage
         {
             Assembly currentAssem = Assembly.GetExecutingAssembly();
             return currentAssem.GetName().ProcessorArchitecture;
+        }
+
+        public static Version GetVersion()
+        {
+            Assembly currentAssem = Assembly.GetExecutingAssembly();
+            return currentAssem.GetName().Version;
         }
     }
 }
