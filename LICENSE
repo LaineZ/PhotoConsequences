@@ -1,18 +1,3 @@
-# VSTImage
-This software allows you apply almost any VST 2.4 effect and bound audio VST buffers on image channels (hue, saturation, value). Combination of this parameters can achieve interesting effects on image. **Feel free to experement**!
-
-**This software currently in heavy development. breakable changes and random bugs are inevitable. Use it on own risk and report bugs in "issues" section!**
-
-# Building
-Just open ``VSTImage.sln`` file in visual studio and run build task
-
-# Screenshots
-![VST Image](https://i.imgur.com/dXRrTNu.png)
-
-# Supported platforms
-Windows with .NET 5.0
-
-# License
 MIT License
 
 Copyright (c) 2020 140bpmdubstep
@@ -34,5 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-VST is a trademark of Steinberg Media Technologies GmbH.

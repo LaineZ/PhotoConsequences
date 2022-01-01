@@ -19,34 +19,66 @@ namespace VSTImage
 {
     public partial class MainForm : Form
     {
-        private List<InsertedPlugin> _plugins = new List<InsertedPlugin>();
+        private PluginRack Rack = new PluginRack();
         private List<Bitmap> Images = new List<Bitmap>();
         private ProcessingProgress ProcessingProgress;
+        private string SavePath;
 
-        public MainForm()
+        public MainForm(string[] args)
         {
             InitializeComponent();
             SetImageControls();
+            Log.Information("Command line: {0}", args);
+            if (args.Any() && args[0].TrimEnd().EndsWith(".viproj"))
+            {
+                LoadProject(args[0]);
+            }
         }
 
-        private void ReleaseAllPlugins()
+        private bool SaveProjUI()
         {
-            foreach (var ctx in _plugins)
+            if (SavePath == null)
             {
-                // dispose of all (unmanaged) resources
-                ctx.PluginContext.Dispose();
+                saveFileDlg.Filter = "VSTImage project file(*.viproj)|*.viproj";
+                if (saveFileDlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    SavePath = saveFileDlg.FileName;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
-            _plugins.Clear();
-            listPlugins.Items.Clear();
+            try
+            {
+                SaveProject(SavePath);
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show($"Saving error: {error.Message}", "Project saving failed!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool SaveConformation()
+        {
+            if (Images.Any() && Rack.Plugins.Any() && 
+                MessageBox.Show($"Save {SavePath ?? "project"} before exiting?", "Project managment", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                SaveProjUI();
+            }
+            return false;
         }
 
         private void SaveProject(string path)
         {
-            foreach (var ctx in _plugins) { ctx.SetState(); }
+            foreach (var ctx in Rack.Plugins) { ctx.SetState(); }
             if (File.Exists(path)) { File.Delete(path); }
 
-            var pluginState = JsonConvert.SerializeObject(_plugins);
+            var pluginState = JsonConvert.SerializeObject(Rack.Plugins);
 
             using (FileStream zipToOpen = new FileStream(path, FileMode.OpenOrCreate))
             {
@@ -76,39 +108,6 @@ namespace VSTImage
             }
         }
 
-        private void AddVST(InsertedPlugin plugin)
-        {
-            try
-            {
-                plugin.CreatePluginContext();
-
-                if (plugin.PluginContext != null)
-                {
-                    _plugins.Add(plugin);
-                    FillPluginList();
-                }
-                else
-                {
-                    MessageBox.Show(this, "Failed to create plugin context", openFileDlg.FileName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            catch (BadImageFormatException ex)
-            {
-                Log.Error("Failed to open VST: {0}", ex.ToString());
-                MessageBox.Show(this, $"This VSTImage build can open only {Utils.GetArch()} plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (EntryPointNotFoundException ex)
-            {
-                Log.Error("Failed to open VST: {0}", ex.ToString());
-                MessageBox.Show(this, $"This dll file is not a VST Plugin.", "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to open VST: {0}", ex.ToString());
-                MessageBox.Show(this, ex.ToString(), "Plugin load error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private void LoadProject(string path)
         {
             DestroyWorkspace();
@@ -123,7 +122,7 @@ namespace VSTImage
                     List<InsertedPlugin> restoredPlugins = JsonConvert.DeserializeObject<List<InsertedPlugin>>(s.ReadToEnd());
                     foreach (var item in restoredPlugins)
                     {
-                        AddVST(item);
+                        Rack.AddPlugin(item);
                     }
                 }
 
@@ -136,23 +135,28 @@ namespace VSTImage
 
                 zip.Dispose();
             }
+
+            SetPluginControls();
+            SetImageControls();
+            FillPluginList();
         }
 
         private void SetImageControls()
         {
+            Text = "VSTImage " + SavePath ?? "untitled project";
             Log.Verbose("Image count: {0}", Images.Count);
             if (Images.Any() && Images.Last() != null)
             {
                 toolApplyBtn.Enabled = true;
-                toolSaveimgBtn.Enabled = true;
-                saveProjBtn.Enabled = true;
+                exportToolStripMenuItem.Enabled = true;
+                saveToolStripMenuItem.Enabled = true;
                 pictureBox.Image = Images.Last();
             }
             else
             {
                 toolApplyBtn.Enabled = false;
-                toolSaveimgBtn.Enabled = false;
-                saveProjBtn.Enabled = false;
+                exportToolStripMenuItem.Enabled = false;
+                saveToolStripMenuItem.Enabled = false;
                 pictureBox.Image = null;
             }
         }
@@ -166,7 +170,7 @@ namespace VSTImage
                     item.Enabled = true;
                 }
 
-                var selection = _plugins[listPlugins.SelectedItems[0].Index];
+                var selection = Rack.Plugins[listPlugins.SelectedItems[0].Index];
 
                 hBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Hue];
                 sBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Saturation];
@@ -196,7 +200,7 @@ namespace VSTImage
         {
             listPlugins.Items.Clear();
 
-            foreach (var ctx in _plugins)
+            foreach (var ctx in Rack.Plugins)
             {
                 ListViewItem lvItem = new ListViewItem(ctx.PluginContext.PluginCommandStub.Commands.GetEffectName());
                 lvItem.SubItems.Add(ctx.PluginContext.PluginCommandStub.Commands.GetProductString());
@@ -208,15 +212,17 @@ namespace VSTImage
                 listPlugins.Items.Add(lvItem);
             }
 
-            openPluginEditorBtn.Enabled = _plugins.Any();
+            openPluginEditorBtn.Enabled = Rack.Plugins.Any();
         }
 
         private void DestroyWorkspace()
         {
             Log.Verbose("Closing project..");
-            ReleaseAllPlugins();
+            listPlugins.Items.Clear();
+            Rack.ReleaseAllPlugins();
             SetPluginControls();
             DestroyImages();
+            SetImageControls();
             GC.Collect();
         }
 
@@ -227,13 +233,15 @@ namespace VSTImage
             if (openFileDlg.ShowDialog(this) == DialogResult.OK)
             {
                 var plugin = new InsertedPlugin(openFileDlg.FileName);
-                AddVST(plugin);
+                Rack.AddPlugin(plugin);
+                FillPluginList();
+                SetPluginControls();
             }
         }
 
         private void openPluginEditorBtn_Click(object sender, EventArgs e)
         {
-            _plugins[listPlugins.SelectedItems[0].Index].ShowEditor(this);
+            Rack.Plugins[listPlugins.SelectedItems[0].Index].ShowEditor(this);
         }
 
         private void toolApplyBtn_Click(object sender, EventArgs e)
@@ -264,8 +272,7 @@ namespace VSTImage
 
                     Log.Information("Opened a image with: {0} pixel format", img.PixelFormat);
 
-                    if (img.PixelFormat is System.Drawing.Imaging.PixelFormat.Indexed or System.Drawing.Imaging.PixelFormat.Format1bppIndexed or
-                        System.Drawing.Imaging.PixelFormat.Format4bppIndexed or System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                    if (img.PixelFormat is PixelFormat.Indexed or PixelFormat.Format1bppIndexed or PixelFormat.Format4bppIndexed or PixelFormat.Format8bppIndexed)
                     {
                         MessageBox.Show(this, "This image have a indexed pixel format - processing unsupported", openFileDlg.FileName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
@@ -284,16 +291,6 @@ namespace VSTImage
             }
         }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            ReleaseAllPlugins();
-            foreach (var item in Images)
-            {
-                item.Dispose();
-            }
-            Images.Clear();
-        }
-
         private void listPlugins_SelectedIndexChanged(object sender, EventArgs e)
         {
             SetPluginControls();
@@ -302,11 +299,11 @@ namespace VSTImage
         private void removePlugBtn_Click(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            var res = MessageBox.Show(this, "Remove plugin?", _plugins[selected].PluginContext.PluginCommandStub.Commands.GetEffectName(), MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var res = MessageBox.Show(this, "Remove plugin?", Rack.Plugins[selected].PluginContext.PluginCommandStub.Commands.GetEffectName(), MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (res == DialogResult.Yes)
             {
-                if (_plugins[selected].PluginContext != null) { _plugins[selected].PluginContext.Dispose(); }
-                _plugins.RemoveAt(selected);
+                if (Rack.Plugins[selected].PluginContext != null) { Rack.Plugins[selected].PluginContext.Dispose(); }
+                Rack.Plugins.RemoveAt(selected);
                 FillPluginList();
                 SetPluginControls();
             }
@@ -315,41 +312,41 @@ namespace VSTImage
         private void hBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            _plugins[selected].ProcessingValues[Channel.Hue] = (Processing)hBox.SelectedIndex;
+            Rack.Plugins[selected].ProcessingValues[Channel.Hue] = (Processing)hBox.SelectedIndex;
         }
 
         private void sBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            _plugins[selected].ProcessingValues[Channel.Saturation] = (Processing)sBox.SelectedIndex;
+            Rack.Plugins[selected].ProcessingValues[Channel.Saturation] = (Processing)sBox.SelectedIndex;
         }
 
         private void vBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            _plugins[selected].ProcessingValues[Channel.Value] = (Processing)vBox.SelectedIndex;
+            Rack.Plugins[selected].ProcessingValues[Channel.Value] = (Processing)vBox.SelectedIndex;
         }
 
         private void trackWet_ValueChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            _plugins[selected].Wet = trackWet.Value / 100; 
+            Rack.Plugins[selected].Wet = trackWet.Value / 100; 
         }
 
         private void inputBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            _plugins[selected].Input = (Channel)vBox.SelectedIndex;
+            Rack.Plugins[selected].Input = (Channel)vBox.SelectedIndex;
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var complete = 0;
 
-            foreach (var plugin in _plugins)
+            foreach (var plugin in Rack.Plugins)
             {
                 Log.Information("Proccessing image...");
-                ImageProcessor processor = new ImageProcessor(plugin, (float)sampleRateInput.Value);
+                ImageProcessor processor = new ImageProcessor(plugin);
                 var image = processor.ProcessImage(Images.Last());
                 Images.Add(image);
                 complete++;
@@ -359,7 +356,7 @@ namespace VSTImage
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            ProcessingProgress.UpdateProgress($"Effects processed: {e.ProgressPercentage} of {_plugins.Count}");
+            ProcessingProgress.UpdateProgress($"Effects processed: {e.ProgressPercentage} of {Rack.Plugins.Count}");
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -404,31 +401,15 @@ namespace VSTImage
 
         private void newProjectBtn_Click(object sender, EventArgs e)
         {
-            if (Images.Any() && _plugins.Any())
-            {
-                // TODO: Save confirmation
-            }
-            else
-            {
-                DestroyWorkspace();
-            }
+            SaveConformation();
+            DestroyWorkspace();
+            SavePath = null;
         }
 
-        private void saveProjBtn_Click(object sender, EventArgs e)
+        private void saveAsProjBtn_Click(object sender, EventArgs e)
         {
-            saveFileDlg.Filter = "VSTImage project file(*.viproj)|*.viproj";
-
-            if (saveFileDlg.ShowDialog(this) == DialogResult.OK)
-            {
-                try
-                {
-                    SaveProject(saveFileDlg.FileName);
-                }
-                catch (Exception error)
-                {
-                    MessageBox.Show($"Saving error: {error.Message}", "Project saving failed!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            SavePath = null;
+            SaveProjUI();
         }
 
         private void loadProjBtn_Click(object sender, EventArgs e)
@@ -439,7 +420,8 @@ namespace VSTImage
             {
                 try
                 {
-                    LoadProject(openFileDlg.FileName);
+                    SavePath = openFileDlg.FileName;
+                    LoadProject(SavePath);
                 }
                 catch (Exception error)
                 {
@@ -447,9 +429,31 @@ namespace VSTImage
                     MessageBox.Show($"Project loaded with errors: {error.Message}", "Project loading", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
 
-            SetPluginControls();
-            SetImageControls();
+        private void toolRemoveAllFX_Click(object sender, EventArgs e)
+        {
+            listPlugins.Items.Clear();
+            Rack.ReleaseAllPlugins();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveProjUI();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = SaveConformation();
+            if (!e.Cancel)
+            {
+                Rack.ReleaseAllPlugins();
+                foreach (var item in Images)
+                {
+                    item.Dispose();
+                }
+                Images.Clear();
+            }
         }
     }
 }

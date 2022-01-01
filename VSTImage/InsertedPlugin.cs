@@ -26,7 +26,7 @@ namespace VSTImage
         Random,
     }
 
-    class InsertedPlugin
+    public class InsertedPlugin
     {
         /// <summary>
         /// VST Plugin context
@@ -49,6 +49,10 @@ namespace VSTImage
         /// Full path to VST
         /// </summary>
         public string PluginPath { get; set; }
+        /// <summary>
+        /// Plugin processing sample rate
+        /// </summary>
+        public float SampleRate { get; set; }
         /// <summary>
         /// Base64-encoded persistant plugin state. Use SetState() function to set this value
         /// </summary>
@@ -78,6 +82,7 @@ namespace VSTImage
             PluginPath = pluginPath;
             Wet = 1.0f;
             Input = Channel.Value;
+            SampleRate = 44100;
             PluginData = string.Empty;
             ProcessingValues = new Dictionary<Channel, Processing>();
             ProcessingValues.Add(Channel.Hue, Processing.Left);

@@ -103,6 +103,26 @@ namespace VSTImage.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ic_add_18pt {
+            get {
+                object obj = ResourceManager.GetObject("ic_add_18pt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ic_open_in_browser_18pt {
+            get {
+                object obj = ResourceManager.GetObject("ic_open_in_browser_18pt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap plug {
             get {
                 object obj = ResourceManager.GetObject("plug", resourceCulture);

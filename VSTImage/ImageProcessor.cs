@@ -15,12 +15,10 @@ namespace VSTImage
     class ImageProcessor
     {
         public InsertedPlugin ChainedPlugin { get; set; }
-        public float SampleRate { get; }
 
-        public ImageProcessor(InsertedPlugin ctx, float samplerate = 44100)
+        public ImageProcessor(InsertedPlugin ctx)
         {
             ChainedPlugin = ctx;
-            SampleRate = samplerate;
         }
 
         private Color ColorFromHSV(double hue, double saturation, double value)
@@ -111,7 +109,7 @@ namespace VSTImage
             }
 
             ChainedPlugin.PluginContext.PluginCommandStub.Commands.SetBlockSize(blockSize);
-            ChainedPlugin.PluginContext.PluginCommandStub.Commands.SetSampleRate(SampleRate);
+            ChainedPlugin.PluginContext.PluginCommandStub.Commands.SetSampleRate(ChainedPlugin.SampleRate);
 
             VstAudioBuffer[] inputBuffers = inputMgr.Buffers.ToArray();
             VstAudioBuffer[] outputBuffers = outputMgr.Buffers.ToArray();

@@ -29,6 +29,7 @@ namespace VSTImage
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.listPlugins = new System.Windows.Forms.ListView();
             this.NameHdr = new System.Windows.Forms.ColumnHeader();
             this.VendorHdr = new System.Windows.Forms.ColumnHeader();
@@ -40,7 +41,6 @@ namespace VSTImage
             this.sampleRateInput = new System.Windows.Forms.NumericUpDown();
             this.inputBox = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.undoBtn = new System.Windows.Forms.Button();
             this.removePlugBtn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.trackWet = new System.Windows.Forms.TrackBar();
@@ -51,18 +51,26 @@ namespace VSTImage
             this.hBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.newProjectBtn = new System.Windows.Forms.ToolStripButton();
-            this.loadProjBtn = new System.Windows.Forms.ToolStripButton();
-            this.saveProjBtn = new System.Windows.Forms.ToolStripButton();
-            this.toolOpenImageBtn = new System.Windows.Forms.ToolStripButton();
-            this.toolSaveimgBtn = new System.Windows.Forms.ToolStripButton();
-            this.toolAddVstBtn = new System.Windows.Forms.ToolStripButton();
+            this.toolUndoBtn = new System.Windows.Forms.ToolStripButton();
             this.toolApplyBtn = new System.Windows.Forms.ToolStripButton();
+            this.toolAddVstBtn = new System.Windows.Forms.ToolStripButton();
+            this.toolRemoveAllFX = new System.Windows.Forms.ToolStripButton();
+            this.toolOpenImageBtn = new System.Windows.Forms.ToolStripButton();
             this.openFileDlg = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDlg = new System.Windows.Forms.SaveFileDialog();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.panelImage = new System.Windows.Forms.Panel();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.menuStrip = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.groupBoxOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).BeginInit();
@@ -70,6 +78,7 @@ namespace VSTImage
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.panelImage.SuspendLayout();
+            this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // listPlugins
@@ -81,9 +90,9 @@ namespace VSTImage
             this.VendorHdr,
             this.ProductHdr});
             this.listPlugins.HideSelection = false;
-            this.listPlugins.Location = new System.Drawing.Point(6, 17);
+            this.listPlugins.Location = new System.Drawing.Point(6, 22);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(313, 268);
+            this.listPlugins.Size = new System.Drawing.Size(325, 239);
             this.listPlugins.TabIndex = 0;
             this.listPlugins.TabStop = false;
             this.listPlugins.UseCompatibleStateImageBehavior = false;
@@ -119,9 +128,9 @@ namespace VSTImage
             | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox1.Controls.Add(this.groupBoxOptions);
             this.groupBox1.Controls.Add(this.listPlugins);
-            this.groupBox1.Location = new System.Drawing.Point(12, 28);
+            this.groupBox1.Location = new System.Drawing.Point(12, 52);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(337, 472);
+            this.groupBox1.Size = new System.Drawing.Size(337, 448);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Plugins";
@@ -133,7 +142,6 @@ namespace VSTImage
             this.groupBoxOptions.Controls.Add(this.sampleRateInput);
             this.groupBoxOptions.Controls.Add(this.inputBox);
             this.groupBoxOptions.Controls.Add(this.label5);
-            this.groupBoxOptions.Controls.Add(this.undoBtn);
             this.groupBoxOptions.Controls.Add(this.removePlugBtn);
             this.groupBoxOptions.Controls.Add(this.label4);
             this.groupBoxOptions.Controls.Add(this.trackWet);
@@ -144,9 +152,9 @@ namespace VSTImage
             this.groupBoxOptions.Controls.Add(this.label2);
             this.groupBoxOptions.Controls.Add(this.hBox);
             this.groupBoxOptions.Controls.Add(this.label1);
-            this.groupBoxOptions.Location = new System.Drawing.Point(6, 291);
+            this.groupBoxOptions.Location = new System.Drawing.Point(6, 267);
             this.groupBoxOptions.Name = "groupBoxOptions";
-            this.groupBoxOptions.Size = new System.Drawing.Size(313, 173);
+            this.groupBoxOptions.Size = new System.Drawing.Size(325, 173);
             this.groupBoxOptions.TabIndex = 3;
             this.groupBoxOptions.TabStop = false;
             this.groupBoxOptions.Text = "Plugin processing options";
@@ -194,7 +202,7 @@ namespace VSTImage
             "Random"});
             this.inputBox.Location = new System.Drawing.Point(118, 19);
             this.inputBox.Name = "inputBox";
-            this.inputBox.Size = new System.Drawing.Size(177, 22);
+            this.inputBox.Size = new System.Drawing.Size(201, 22);
             this.inputBox.TabIndex = 15;
             this.inputBox.SelectedIndexChanged += new System.EventHandler(this.inputBox_SelectedIndexChanged);
             // 
@@ -207,20 +215,10 @@ namespace VSTImage
             this.label5.TabIndex = 14;
             this.label5.Text = "Input channel:";
             // 
-            // undoBtn
-            // 
-            this.undoBtn.Location = new System.Drawing.Point(134, 145);
-            this.undoBtn.Name = "undoBtn";
-            this.undoBtn.Size = new System.Drawing.Size(74, 22);
-            this.undoBtn.TabIndex = 13;
-            this.undoBtn.Text = "Undo";
-            this.undoBtn.UseVisualStyleBackColor = true;
-            this.undoBtn.Click += new System.EventHandler(this.undoBtn_Click);
-            // 
             // removePlugBtn
             // 
             this.removePlugBtn.Enabled = false;
-            this.removePlugBtn.Location = new System.Drawing.Point(214, 145);
+            this.removePlugBtn.Location = new System.Drawing.Point(132, 145);
             this.removePlugBtn.Name = "removePlugBtn";
             this.removePlugBtn.Size = new System.Drawing.Size(93, 22);
             this.removePlugBtn.TabIndex = 12;
@@ -243,7 +241,7 @@ namespace VSTImage
             this.trackWet.Location = new System.Drawing.Point(39, 74);
             this.trackWet.Maximum = 100;
             this.trackWet.Name = "trackWet";
-            this.trackWet.Size = new System.Drawing.Size(256, 45);
+            this.trackWet.Size = new System.Drawing.Size(280, 45);
             this.trackWet.TabIndex = 10;
             this.trackWet.Value = 100;
             this.trackWet.ValueChanged += new System.EventHandler(this.trackWet_ValueChanged);
@@ -324,75 +322,26 @@ namespace VSTImage
             // 
             this.toolStrip1.AllowItemReorder = true;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newProjectBtn,
-            this.loadProjBtn,
-            this.saveProjBtn,
-            this.toolOpenImageBtn,
-            this.toolSaveimgBtn,
+            this.toolUndoBtn,
+            this.toolApplyBtn,
             this.toolAddVstBtn,
-            this.toolApplyBtn});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolRemoveAllFX,
+            this.toolOpenImageBtn});
+            this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(944, 25);
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // newProjectBtn
+            // toolUndoBtn
             // 
-            this.newProjectBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.newProjectBtn.Image = global::VSTImage.Properties.Resources.empty;
-            this.newProjectBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.newProjectBtn.Name = "newProjectBtn";
-            this.newProjectBtn.Size = new System.Drawing.Size(23, 22);
-            this.newProjectBtn.Text = "New project";
-            this.newProjectBtn.Click += new System.EventHandler(this.newProjectBtn_Click);
-            // 
-            // loadProjBtn
-            // 
-            this.loadProjBtn.Image = global::VSTImage.Properties.Resources.computer_folder_open;
-            this.loadProjBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.loadProjBtn.Name = "loadProjBtn";
-            this.loadProjBtn.Size = new System.Drawing.Size(111, 22);
-            this.loadProjBtn.Text = "Load project";
-            this.loadProjBtn.Click += new System.EventHandler(this.loadProjBtn_Click);
-            // 
-            // saveProjBtn
-            // 
-            this.saveProjBtn.Image = global::VSTImage.Properties.Resources.card_memory_sd;
-            this.saveProjBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.saveProjBtn.Name = "saveProjBtn";
-            this.saveProjBtn.Size = new System.Drawing.Size(111, 22);
-            this.saveProjBtn.Text = "Save project";
-            this.saveProjBtn.Click += new System.EventHandler(this.saveProjBtn_Click);
-            // 
-            // toolOpenImageBtn
-            // 
-            this.toolOpenImageBtn.Image = global::VSTImage.Properties.Resources.computer_folder_open;
-            this.toolOpenImageBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolOpenImageBtn.Name = "toolOpenImageBtn";
-            this.toolOpenImageBtn.Size = new System.Drawing.Size(97, 22);
-            this.toolOpenImageBtn.Text = "Open image";
-            this.toolOpenImageBtn.Click += new System.EventHandler(this.toolOpenImageBtn_Click);
-            // 
-            // toolSaveimgBtn
-            // 
-            this.toolSaveimgBtn.Enabled = false;
-            this.toolSaveimgBtn.Image = global::VSTImage.Properties.Resources.processing;
-            this.toolSaveimgBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolSaveimgBtn.Name = "toolSaveimgBtn";
-            this.toolSaveimgBtn.Size = new System.Drawing.Size(111, 22);
-            this.toolSaveimgBtn.Text = "Export image";
-            this.toolSaveimgBtn.ToolTipText = "Export image";
-            this.toolSaveimgBtn.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
-            // 
-            // toolAddVstBtn
-            // 
-            this.toolAddVstBtn.Image = global::VSTImage.Properties.Resources.plug;
-            this.toolAddVstBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolAddVstBtn.Name = "toolAddVstBtn";
-            this.toolAddVstBtn.Size = new System.Drawing.Size(97, 22);
-            this.toolAddVstBtn.Text = "Add VST FX";
-            this.toolAddVstBtn.Click += new System.EventHandler(this.toolAddVstBtn_Click);
+            this.toolUndoBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolUndoBtn.Image = ((System.Drawing.Image)(resources.GetObject("toolUndoBtn.Image")));
+            this.toolUndoBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolUndoBtn.Name = "toolUndoBtn";
+            this.toolUndoBtn.Size = new System.Drawing.Size(39, 22);
+            this.toolUndoBtn.Text = "Undo";
+            this.toolUndoBtn.Click += new System.EventHandler(this.undoBtn_Click);
             // 
             // toolApplyBtn
             // 
@@ -403,6 +352,33 @@ namespace VSTImage
             this.toolApplyBtn.Size = new System.Drawing.Size(146, 22);
             this.toolApplyBtn.Text = "Apply FX on image";
             this.toolApplyBtn.Click += new System.EventHandler(this.toolApplyBtn_Click);
+            // 
+            // toolAddVstBtn
+            // 
+            this.toolAddVstBtn.Image = global::VSTImage.Properties.Resources.plug;
+            this.toolAddVstBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolAddVstBtn.Name = "toolAddVstBtn";
+            this.toolAddVstBtn.Size = new System.Drawing.Size(97, 22);
+            this.toolAddVstBtn.Text = "Add VST Fx";
+            this.toolAddVstBtn.Click += new System.EventHandler(this.toolAddVstBtn_Click);
+            // 
+            // toolRemoveAllFX
+            // 
+            this.toolRemoveAllFX.Image = global::VSTImage.Properties.Resources.empty;
+            this.toolRemoveAllFX.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolRemoveAllFX.Name = "toolRemoveAllFX";
+            this.toolRemoveAllFX.Size = new System.Drawing.Size(118, 22);
+            this.toolRemoveAllFX.Text = "Remove all FX";
+            this.toolRemoveAllFX.Click += new System.EventHandler(this.toolRemoveAllFX_Click);
+            // 
+            // toolOpenImageBtn
+            // 
+            this.toolOpenImageBtn.Image = global::VSTImage.Properties.Resources.ic_add_18pt;
+            this.toolOpenImageBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolOpenImageBtn.Name = "toolOpenImageBtn";
+            this.toolOpenImageBtn.Size = new System.Drawing.Size(97, 22);
+            this.toolOpenImageBtn.Text = "Open image";
+            this.toolOpenImageBtn.Click += new System.EventHandler(this.toolOpenImageBtn_Click);
             // 
             // openFileDlg
             // 
@@ -434,10 +410,84 @@ namespace VSTImage
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelImage.AutoScroll = true;
             this.panelImage.Controls.Add(this.pictureBox);
-            this.panelImage.Location = new System.Drawing.Point(355, 28);
+            this.panelImage.Location = new System.Drawing.Point(355, 52);
             this.panelImage.Name = "panelImage";
-            this.panelImage.Size = new System.Drawing.Size(589, 472);
+            this.panelImage.Size = new System.Drawing.Size(589, 448);
             this.panelImage.TabIndex = 5;
+            // 
+            // menuStrip
+            // 
+            this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.aboutToolStripMenuItem});
+            this.menuStrip.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip.Name = "menuStrip";
+            this.menuStrip.Size = new System.Drawing.Size(944, 24);
+            this.menuStrip.TabIndex = 6;
+            this.menuStrip.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newToolStripMenuItem,
+            this.openToolStripMenuItem,
+            this.saveToolStripMenuItem,
+            this.saveAsToolStripMenuItem,
+            this.exportToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.fileToolStripMenuItem.Text = "File";
+            // 
+            // newToolStripMenuItem
+            // 
+            this.newToolStripMenuItem.Name = "newToolStripMenuItem";
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.newToolStripMenuItem.Text = "New";
+            this.newToolStripMenuItem.Click += new System.EventHandler(this.newProjectBtn_Click);
+            // 
+            // openToolStripMenuItem
+            // 
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.loadProjBtn_Click);
+            // 
+            // saveToolStripMenuItem
+            // 
+            this.saveToolStripMenuItem.Enabled = false;
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveToolStripMenuItem.Text = "Save";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Enabled = false;
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveAsToolStripMenuItem.Text = "Save as...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsProjBtn_Click);
+            // 
+            // exportToolStripMenuItem
+            // 
+            this.exportToolStripMenuItem.Enabled = false;
+            this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exportToolStripMenuItem.Text = "Export image";
+            this.exportToolStripMenuItem.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
+            this.aboutToolStripMenuItem.Text = "About";
             // 
             // MainForm
             // 
@@ -447,9 +497,11 @@ namespace VSTImage
             this.Controls.Add(this.panelImage);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.menuStrip);
+            this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
             this.Text = "VSTImage";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBoxOptions.ResumeLayout(false);
             this.groupBoxOptions.PerformLayout();
@@ -460,6 +512,8 @@ namespace VSTImage
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.panelImage.ResumeLayout(false);
             this.panelImage.PerformLayout();
+            this.menuStrip.ResumeLayout(false);
+            this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -471,9 +525,6 @@ namespace VSTImage
         private System.Windows.Forms.Button openPluginEditorBtn;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripButton toolOpenImageBtn;
-        private System.Windows.Forms.ToolStripButton toolSaveimgBtn;
-        private System.Windows.Forms.ToolStripButton toolAddVstBtn;
         private System.Windows.Forms.ToolStripButton toolApplyBtn;
         private System.Windows.Forms.OpenFileDialog openFileDlg;
         private System.Windows.Forms.SaveFileDialog saveFileDlg;
@@ -490,7 +541,6 @@ namespace VSTImage
         private System.Windows.Forms.TrackBar trackWet;
         private System.Windows.Forms.Button removePlugBtn;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
-        private System.Windows.Forms.Button undoBtn;
         private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.Panel panelImage;
         private System.Windows.Forms.ComboBox inputBox;
@@ -498,9 +548,20 @@ namespace VSTImage
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown sampleRateInput;
         private System.Windows.Forms.ColumnHeader ProductHdr;
-        private System.Windows.Forms.ToolStripButton newProjectBtn;
-        private System.Windows.Forms.ToolStripButton loadProjBtn;
-        private System.Windows.Forms.ToolStripButton saveProjBtn;
+        private System.Windows.Forms.ToolStripButton toolUndoBtn;
+        private System.Windows.Forms.ToolStripButton toolAddVstBtn;
+        private System.Windows.Forms.ToolStripButton toolRemoveAllFX;
+        private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.MenuStrip menuStrip;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton toolOpenImageBtn;
     }
 }
 

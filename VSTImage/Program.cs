@@ -17,7 +17,7 @@ namespace VSTImage
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             AllocConsole();
             Log.Logger = new LoggerConfiguration()
@@ -28,7 +28,7 @@ namespace VSTImage
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new MainForm(args));
         }
     }
 }
