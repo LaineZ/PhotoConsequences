@@ -21,7 +21,7 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: VSTImage
+      Solution_Name: PhotoConsequences
 
     steps:
     - name: Checkout
@@ -39,7 +39,7 @@ jobs:
       run: dotnet publish -c Release -p:Platform="x64" -r win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
     
     - name: View build directory
-      run: tree .\VSTImage\VSTImage\bin
+      run: tree .\PhotoConsequences\
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
