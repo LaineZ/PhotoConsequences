@@ -172,10 +172,8 @@ namespace PhotoConsequences
 
                 var selection = Rack.Plugins[listPlugins.SelectedItems[0].Index];
 
-                hBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Hue];
-                sBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Saturation];
-                vBox.SelectedIndex = (int)selection.ProcessingValues[Channel.Value];
-                inputBox.SelectedIndex = (int)selection.Input;
+                outputBox.SelectedIndex = (int)selection.AudioProcessingOuput;
+                inputBox.SelectedIndex = (int)selection.ImageProcessingInput;
             }
             else
             {
@@ -308,25 +306,6 @@ namespace PhotoConsequences
                 SetPluginControls();
             }
         }
-
-        private void hBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var selected = listPlugins.SelectedItems[0].Index;
-            Rack.Plugins[selected].ProcessingValues[Channel.Hue] = (Processing)hBox.SelectedIndex;
-        }
-
-        private void sBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var selected = listPlugins.SelectedItems[0].Index;
-            Rack.Plugins[selected].ProcessingValues[Channel.Saturation] = (Processing)sBox.SelectedIndex;
-        }
-
-        private void vBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var selected = listPlugins.SelectedItems[0].Index;
-            Rack.Plugins[selected].ProcessingValues[Channel.Value] = (Processing)vBox.SelectedIndex;
-        }
-
         private void trackWet_ValueChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
@@ -336,7 +315,14 @@ namespace PhotoConsequences
         private void inputBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selected = listPlugins.SelectedItems[0].Index;
-            Rack.Plugins[selected].Input = (Channel)vBox.SelectedIndex;
+            Rack.Plugins[selected].ImageProcessingInput = (Channel)inputBox.SelectedIndex;
+        }
+
+
+        private void outputBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selected = listPlugins.SelectedItems[0].Index;
+            Rack.Plugins[selected].AudioProcessingOuput = (Processing)outputBox.SelectedIndex;
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)

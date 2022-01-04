@@ -23,7 +23,6 @@ namespace PhotoConsequences
         Hue,
         Saturation,
         Value,
-        Random,
     }
 
     public class InsertedPlugin
@@ -34,13 +33,13 @@ namespace PhotoConsequences
         [JsonIgnore]
         public VstPluginContext PluginContext { get; set; }
         /// <summary>
-        /// Processing output channel pairs
+        /// Processing input image channel
         /// </summary>
-        public Dictionary<Channel, Processing> ProcessingValues { get; set; }
+        public Channel ImageProcessingInput { get; set; }
         /// <summary>
-        /// Processing input channel
+        /// Processing output audio channel
         /// </summary>
-        public Channel Input { get; set; }
+        public Processing AudioProcessingOuput { get; set; }
         /// <summary>
         /// Dry/Wet processing ratio
         /// </summary>
@@ -81,13 +80,10 @@ namespace PhotoConsequences
         {
             PluginPath = pluginPath;
             Wet = 1.0f;
-            Input = Channel.Value;
+            ImageProcessingInput = Channel.Value;
+            AudioProcessingOuput = Processing.Left;
             SampleRate = 44100;
             PluginData = string.Empty;
-            ProcessingValues = new Dictionary<Channel, Processing>();
-            ProcessingValues.Add(Channel.Hue, Processing.Left);
-            ProcessingValues.Add(Channel.Saturation, Processing.None);
-            ProcessingValues.Add(Channel.Value, Processing.None);
         }
 
         /// <summary>

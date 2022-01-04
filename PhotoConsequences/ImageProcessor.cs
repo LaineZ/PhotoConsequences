@@ -78,8 +78,6 @@ namespace PhotoConsequences
             using VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize);
             using VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize);
 
-            var rng = new Random();
-
             foreach (VstAudioBuffer buffer in inputMgr.Buffers)
             {
                 var span = buffer.AsSpan();
@@ -88,21 +86,20 @@ namespace PhotoConsequences
                 {
                     for (int y = 0; y < size.Height; y++)
                     {
-                        if (ChainedPlugin.Input == Channel.Value)
+
+                        switch (ChainedPlugin.ImageProcessingInput)
                         {
-                            span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetBrightness();
-                        }
-                        if (ChainedPlugin.Input == Channel.Saturation)
-                        {
-                            span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetSaturation();
-                        }
-                        if (ChainedPlugin.Input == Channel.Hue)
-                        {
-                            span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetHue();
-                        }
-                        if (ChainedPlugin.Input == Channel.Random)
-                        {
-                            span[(int)size.Width * y + x] = (float)rng.NextDouble();
+                            case Channel.Hue:
+                                span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetHue();
+                                break;
+                            case Channel.Saturation:
+                                span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetSaturation();
+                                break;
+                            case Channel.Value:
+                                span[(int)size.Width * y + x] = outputImage.GetPixel(x, y).GetBrightness();
+                                break;
+                            default:
+                                break;
                         }
                     }
                 }
@@ -126,23 +123,22 @@ namespace PhotoConsequences
                 {
                     var pixel = outputImage.GetPixel(x, y);
                     ColorToHSV(pixel, out var hue, out var saturation, out var value);
+                    var processingBuffer = (int)ChainedPlugin.AudioProcessingOuput;
 
-                    var processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Value];
-                    if (processingBuffer < 1)
-                    {
-                        value = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
-                    }
 
-                    processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Hue];
-                    if (processingBuffer < 1)
+                    switch (ChainedPlugin.ImageProcessingInput)
                     {
-                        hue = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
-                    }
-
-                    processingBuffer = (int)ChainedPlugin.ProcessingValues[Channel.Saturation];
-                    if (processingBuffer < 1)
-                    {
-                        saturation = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
+                        case Channel.Hue:
+                            hue = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
+                            break;
+                        case Channel.Saturation:
+                            saturation = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
+                            break;
+                        case Channel.Value:
+                            value = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
+                            break;
+                        default:
+                            break;
                     }
 
                     outputImage.SetPixel(x, y, ColorFromHSV(hue, saturation, value));

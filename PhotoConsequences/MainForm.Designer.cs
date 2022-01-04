@@ -44,11 +44,7 @@ namespace PhotoConsequences
             this.removePlugBtn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.trackWet = new System.Windows.Forms.TrackBar();
-            this.sBox = new System.Windows.Forms.ComboBox();
-            this.vBox = new System.Windows.Forms.ComboBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.hBox = new System.Windows.Forms.ComboBox();
+            this.outputBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolUndoBtn = new System.Windows.Forms.ToolStripButton();
@@ -92,7 +88,7 @@ namespace PhotoConsequences
             this.listPlugins.HideSelection = false;
             this.listPlugins.Location = new System.Drawing.Point(6, 22);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(325, 239);
+            this.listPlugins.Size = new System.Drawing.Size(337, 239);
             this.listPlugins.TabIndex = 0;
             this.listPlugins.TabStop = false;
             this.listPlugins.UseCompatibleStateImageBehavior = false;
@@ -128,9 +124,9 @@ namespace PhotoConsequences
             | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox1.Controls.Add(this.groupBoxOptions);
             this.groupBox1.Controls.Add(this.listPlugins);
-            this.groupBox1.Location = new System.Drawing.Point(12, 52);
+            this.groupBox1.Location = new System.Drawing.Point(0, 52);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(337, 448);
+            this.groupBox1.Size = new System.Drawing.Size(349, 448);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Plugins";
@@ -139,22 +135,18 @@ namespace PhotoConsequences
             // 
             this.groupBoxOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBoxOptions.Controls.Add(this.label6);
-            this.groupBoxOptions.Controls.Add(this.sampleRateInput);
-            this.groupBoxOptions.Controls.Add(this.inputBox);
-            this.groupBoxOptions.Controls.Add(this.label5);
-            this.groupBoxOptions.Controls.Add(this.removePlugBtn);
             this.groupBoxOptions.Controls.Add(this.label4);
+            this.groupBoxOptions.Controls.Add(this.inputBox);
             this.groupBoxOptions.Controls.Add(this.trackWet);
+            this.groupBoxOptions.Controls.Add(this.label5);
+            this.groupBoxOptions.Controls.Add(this.sampleRateInput);
+            this.groupBoxOptions.Controls.Add(this.removePlugBtn);
             this.groupBoxOptions.Controls.Add(this.openPluginEditorBtn);
-            this.groupBoxOptions.Controls.Add(this.sBox);
-            this.groupBoxOptions.Controls.Add(this.vBox);
-            this.groupBoxOptions.Controls.Add(this.label3);
-            this.groupBoxOptions.Controls.Add(this.label2);
-            this.groupBoxOptions.Controls.Add(this.hBox);
+            this.groupBoxOptions.Controls.Add(this.outputBox);
             this.groupBoxOptions.Controls.Add(this.label1);
             this.groupBoxOptions.Location = new System.Drawing.Point(6, 267);
             this.groupBoxOptions.Name = "groupBoxOptions";
-            this.groupBoxOptions.Size = new System.Drawing.Size(325, 173);
+            this.groupBoxOptions.Size = new System.Drawing.Size(337, 173);
             this.groupBoxOptions.TabIndex = 3;
             this.groupBoxOptions.TabStop = false;
             this.groupBoxOptions.Text = "Plugin processing options";
@@ -162,7 +154,7 @@ namespace PhotoConsequences
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 105);
+            this.label6.Location = new System.Drawing.Point(10, 76);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(91, 14);
             this.label6.TabIndex = 17;
@@ -170,7 +162,7 @@ namespace PhotoConsequences
             // 
             // sampleRateInput
             // 
-            this.sampleRateInput.Location = new System.Drawing.Point(105, 103);
+            this.sampleRateInput.Location = new System.Drawing.Point(182, 74);
             this.sampleRateInput.Maximum = new decimal(new int[] {
             192000,
             0,
@@ -182,7 +174,7 @@ namespace PhotoConsequences
             0,
             0});
             this.sampleRateInput.Name = "sampleRateInput";
-            this.sampleRateInput.Size = new System.Drawing.Size(120, 23);
+            this.sampleRateInput.Size = new System.Drawing.Size(149, 23);
             this.sampleRateInput.TabIndex = 16;
             this.sampleRateInput.Value = new decimal(new int[] {
             44100,
@@ -198,11 +190,10 @@ namespace PhotoConsequences
             this.inputBox.Items.AddRange(new object[] {
             "Hue",
             "Saturation",
-            "Value",
-            "Random"});
-            this.inputBox.Location = new System.Drawing.Point(118, 19);
+            "Value"});
+            this.inputBox.Location = new System.Drawing.Point(182, 19);
             this.inputBox.Name = "inputBox";
-            this.inputBox.Size = new System.Drawing.Size(201, 22);
+            this.inputBox.Size = new System.Drawing.Size(149, 22);
             this.inputBox.TabIndex = 15;
             this.inputBox.SelectedIndexChanged += new System.EventHandler(this.inputBox_SelectedIndexChanged);
             // 
@@ -211,9 +202,9 @@ namespace PhotoConsequences
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(7, 22);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(105, 14);
+            this.label5.Size = new System.Drawing.Size(147, 14);
             this.label5.TabIndex = 14;
-            this.label5.Text = "Input channel:";
+            this.label5.Text = "Input image channel:";
             // 
             // removePlugBtn
             // 
@@ -229,7 +220,7 @@ namespace PhotoConsequences
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 82);
+            this.label4.Location = new System.Drawing.Point(10, 113);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(35, 14);
             this.label4.TabIndex = 11;
@@ -238,7 +229,7 @@ namespace PhotoConsequences
             // trackWet
             // 
             this.trackWet.Enabled = false;
-            this.trackWet.Location = new System.Drawing.Point(39, 74);
+            this.trackWet.Location = new System.Drawing.Point(51, 103);
             this.trackWet.Maximum = 100;
             this.trackWet.Name = "trackWet";
             this.trackWet.Size = new System.Drawing.Size(280, 45);
@@ -246,77 +237,28 @@ namespace PhotoConsequences
             this.trackWet.Value = 100;
             this.trackWet.ValueChanged += new System.EventHandler(this.trackWet_ValueChanged);
             // 
-            // sBox
+            // outputBox
             // 
-            this.sBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.sBox.Enabled = false;
-            this.sBox.FormattingEnabled = true;
-            this.sBox.Items.AddRange(new object[] {
+            this.outputBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.outputBox.Enabled = false;
+            this.outputBox.FormattingEnabled = true;
+            this.outputBox.Items.AddRange(new object[] {
             "Left",
-            "Right",
-            "None"});
-            this.sBox.Location = new System.Drawing.Point(134, 47);
-            this.sBox.Name = "sBox";
-            this.sBox.Size = new System.Drawing.Size(64, 22);
-            this.sBox.TabIndex = 9;
-            this.sBox.SelectedIndexChanged += new System.EventHandler(this.sBox_SelectedIndexChanged);
-            // 
-            // vBox
-            // 
-            this.vBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.vBox.Enabled = false;
-            this.vBox.FormattingEnabled = true;
-            this.vBox.Items.AddRange(new object[] {
-            "Left",
-            "Right",
-            "None"});
-            this.vBox.Location = new System.Drawing.Point(231, 47);
-            this.vBox.Name = "vBox";
-            this.vBox.Size = new System.Drawing.Size(64, 22);
-            this.vBox.TabIndex = 8;
-            this.vBox.SelectedIndexChanged += new System.EventHandler(this.vBox_SelectedIndexChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(204, 50);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(21, 14);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "V:";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(107, 50);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(21, 14);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "S:";
-            // 
-            // hBox
-            // 
-            this.hBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.hBox.Enabled = false;
-            this.hBox.FormattingEnabled = true;
-            this.hBox.Items.AddRange(new object[] {
-            "Left",
-            "Right",
-            "None"});
-            this.hBox.Location = new System.Drawing.Point(37, 47);
-            this.hBox.Name = "hBox";
-            this.hBox.Size = new System.Drawing.Size(64, 22);
-            this.hBox.TabIndex = 4;
-            this.hBox.SelectedIndexChanged += new System.EventHandler(this.hBox_SelectedIndexChanged);
+            "Right"});
+            this.outputBox.Location = new System.Drawing.Point(182, 46);
+            this.outputBox.Name = "outputBox";
+            this.outputBox.Size = new System.Drawing.Size(149, 22);
+            this.outputBox.TabIndex = 4;
+            this.outputBox.SelectedIndexChanged += new System.EventHandler(this.outputBox_SelectedIndexChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(10, 50);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(21, 14);
+            this.label1.Size = new System.Drawing.Size(154, 14);
             this.label1.TabIndex = 3;
-            this.label1.Text = "H:";
+            this.label1.Text = "Output audio channel:";
             // 
             // toolStrip1
             // 
@@ -440,7 +382,7 @@ namespace PhotoConsequences
             // 
             this.newToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.empty;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newProjectBtn_Click);
             // 
@@ -448,7 +390,7 @@ namespace PhotoConsequences
             // 
             this.openToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.computer_folder_open;
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.loadProjBtn_Click);
             // 
@@ -457,7 +399,7 @@ namespace PhotoConsequences
             this.saveToolStripMenuItem.Enabled = false;
             this.saveToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.card_memory_sd;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
@@ -465,7 +407,7 @@ namespace PhotoConsequences
             // 
             this.saveAsToolStripMenuItem.Enabled = false;
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.saveAsToolStripMenuItem.Text = "Save as...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsProjBtn_Click);
             // 
@@ -473,14 +415,14 @@ namespace PhotoConsequences
             // 
             this.exportToolStripMenuItem.Enabled = false;
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.exportToolStripMenuItem.Text = "Export image";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
             // aboutToolStripMenuItem
@@ -533,11 +475,7 @@ namespace PhotoConsequences
         private System.Windows.Forms.ColumnHeader VendorHdr;
         private System.Windows.Forms.GroupBox groupBoxOptions;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox hBox;
-        private System.Windows.Forms.ComboBox sBox;
-        private System.Windows.Forms.ComboBox vBox;
+        private System.Windows.Forms.ComboBox outputBox;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TrackBar trackWet;
         private System.Windows.Forms.Button removePlugBtn;
