@@ -41,5 +41,10 @@ namespace PhotoConsequences
         {
             labelVersion.Text = "Version " + Utils.GetVersion();
         }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

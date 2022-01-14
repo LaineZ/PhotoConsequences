@@ -38,12 +38,12 @@ namespace PhotoConsequences
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.sampleRateInput = new System.Windows.Forms.NumericUpDown();
-            this.inputBox = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.removePlugBtn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
+            this.inputBox = new System.Windows.Forms.ComboBox();
             this.trackWet = new System.Windows.Forms.TrackBar();
+            this.label5 = new System.Windows.Forms.Label();
+            this.sampleRateInput = new System.Windows.Forms.NumericUpDown();
+            this.removePlugBtn = new System.Windows.Forms.Button();
             this.outputBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -69,8 +69,8 @@ namespace PhotoConsequences
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.groupBoxOptions.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.panelImage.SuspendLayout();
@@ -160,6 +160,50 @@ namespace PhotoConsequences
             this.label6.TabIndex = 17;
             this.label6.Text = "Sample rate:";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(10, 113);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 14);
+            this.label4.TabIndex = 11;
+            this.label4.Text = "Wet:";
+            // 
+            // inputBox
+            // 
+            this.inputBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.inputBox.Enabled = false;
+            this.inputBox.FormattingEnabled = true;
+            this.inputBox.Items.AddRange(new object[] {
+            "Hue",
+            "Saturation",
+            "Value"});
+            this.inputBox.Location = new System.Drawing.Point(182, 19);
+            this.inputBox.Name = "inputBox";
+            this.inputBox.Size = new System.Drawing.Size(149, 22);
+            this.inputBox.TabIndex = 15;
+            this.inputBox.SelectedIndexChanged += new System.EventHandler(this.inputBox_SelectedIndexChanged);
+            // 
+            // trackWet
+            // 
+            this.trackWet.Enabled = false;
+            this.trackWet.Location = new System.Drawing.Point(51, 103);
+            this.trackWet.Maximum = 100;
+            this.trackWet.Name = "trackWet";
+            this.trackWet.Size = new System.Drawing.Size(280, 45);
+            this.trackWet.TabIndex = 10;
+            this.trackWet.Value = 100;
+            this.trackWet.ValueChanged += new System.EventHandler(this.trackWet_ValueChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(7, 22);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(147, 14);
+            this.label5.TabIndex = 14;
+            this.label5.Text = "Input image channel:";
+            // 
             // sampleRateInput
             // 
             this.sampleRateInput.Location = new System.Drawing.Point(182, 74);
@@ -182,30 +226,6 @@ namespace PhotoConsequences
             0,
             0});
             // 
-            // inputBox
-            // 
-            this.inputBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.inputBox.Enabled = false;
-            this.inputBox.FormattingEnabled = true;
-            this.inputBox.Items.AddRange(new object[] {
-            "Hue",
-            "Saturation",
-            "Value"});
-            this.inputBox.Location = new System.Drawing.Point(182, 19);
-            this.inputBox.Name = "inputBox";
-            this.inputBox.Size = new System.Drawing.Size(149, 22);
-            this.inputBox.TabIndex = 15;
-            this.inputBox.SelectedIndexChanged += new System.EventHandler(this.inputBox_SelectedIndexChanged);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(7, 22);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(147, 14);
-            this.label5.TabIndex = 14;
-            this.label5.Text = "Input image channel:";
-            // 
             // removePlugBtn
             // 
             this.removePlugBtn.Enabled = false;
@@ -216,26 +236,6 @@ namespace PhotoConsequences
             this.removePlugBtn.Text = "Remove";
             this.removePlugBtn.UseVisualStyleBackColor = true;
             this.removePlugBtn.Click += new System.EventHandler(this.removePlugBtn_Click);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 113);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 14);
-            this.label4.TabIndex = 11;
-            this.label4.Text = "Wet:";
-            // 
-            // trackWet
-            // 
-            this.trackWet.Enabled = false;
-            this.trackWet.Location = new System.Drawing.Point(51, 103);
-            this.trackWet.Maximum = 100;
-            this.trackWet.Name = "trackWet";
-            this.trackWet.Size = new System.Drawing.Size(280, 45);
-            this.trackWet.TabIndex = 10;
-            this.trackWet.Value = 100;
-            this.trackWet.ValueChanged += new System.EventHandler(this.trackWet_ValueChanged);
             // 
             // outputBox
             // 
@@ -441,6 +441,7 @@ namespace PhotoConsequences
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
             this.Text = "PhotoConsequences";
@@ -448,8 +449,8 @@ namespace PhotoConsequences
             this.groupBox1.ResumeLayout(false);
             this.groupBoxOptions.ResumeLayout(false);
             this.groupBoxOptions.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackWet)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sampleRateInput)).EndInit();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();

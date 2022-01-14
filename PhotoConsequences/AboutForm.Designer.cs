@@ -33,13 +33,15 @@ namespace PhotoConsequences
             this.labelVersion = new System.Windows.Forms.Label();
             this.linkGit = new System.Windows.Forms.LinkLabel();
             this.label3 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(67, 297);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(332, 40);
             this.label1.TabIndex = 0;
@@ -48,7 +50,7 @@ namespace PhotoConsequences
             // labelVersion
             // 
             this.labelVersion.AutoSize = true;
-            this.labelVersion.Location = new System.Drawing.Point(245, 95);
+            this.labelVersion.Location = new System.Drawing.Point(12, 377);
             this.labelVersion.Name = "labelVersion";
             this.labelVersion.Size = new System.Drawing.Size(175, 14);
             this.labelVersion.TabIndex = 1;
@@ -57,7 +59,7 @@ namespace PhotoConsequences
             // linkGit
             // 
             this.linkGit.AutoSize = true;
-            this.linkGit.Location = new System.Drawing.Point(12, 95);
+            this.linkGit.Location = new System.Drawing.Point(372, 377);
             this.linkGit.Name = "linkGit";
             this.linkGit.Size = new System.Drawing.Size(49, 14);
             this.linkGit.TabIndex = 2;
@@ -68,18 +70,31 @@ namespace PhotoConsequences
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 58);
+            this.label3.Location = new System.Drawing.Point(22, 337);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(399, 28);
             this.label3.TabIndex = 3;
-            this.label3.Text = "Tool to apply VST Effects on Image channels.\r\nVST is a trademark of Steinberg Med" +
-    "ia Technologies GmbH.";
+            this.label3.Text = "Tool to apply VST Effects on Image.\r\nVST is a trademark of Steinberg Media Techno" +
+    "logies GmbH.";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::PhotoConsequences.Properties.Resources.icon;
+            this.pictureBox1.Location = new System.Drawing.Point(94, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(274, 282);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 4;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // AboutForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(432, 123);
+            this.ClientSize = new System.Drawing.Size(433, 396);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.linkGit);
             this.Controls.Add(this.labelVersion);
@@ -88,6 +103,7 @@ namespace PhotoConsequences
             this.Name = "AboutForm";
             this.Text = "About";
             this.Load += new System.EventHandler(this.AboutForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -99,5 +115,6 @@ namespace PhotoConsequences
         private System.Windows.Forms.Label labelVersion;
         private System.Windows.Forms.LinkLabel linkGit;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
