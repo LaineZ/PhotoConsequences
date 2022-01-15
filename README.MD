@@ -1,10 +1,20 @@
 # PhotoConsequences
-This software allows you apply almost any VST 2.4 effect and bound audio VST buffers on image channels (hue, saturation, value). Combination of this parameters can achieve interesting effects on image. **Feel free to experement**!
+![PhotoConsequences](/PhotoConsequences/Resources/icon.png)
 
-**This software currently in heavy development. breakable changes and random bugs are inevitable. Use it on own risk and report bugs in "issues" section!**
+This software allows you apply almost any VST™ 2.4 effect and bound audio VST™ buffers on image channels **(hue, saturation, value)**. Combination of this parameters can achieve interesting effects on image. **Feel free to experement**!
+
+**This software currently in development. breakable changes and random bugs are inevitable.**
 
 # Building
-Just open ``PhotoConsequences.sln`` file in visual studio and run build task
+Just open ``PhotoConsequences.sln`` file in visual studio and run build task. 
+
+**Or** run build scripts in PhotoConsequences directory
+
+``build-shared.bat`` - builds shared runtime build
+
+``build.bat`` - builds bundled runtime build
+
+Build results will be saved in build directory
 
 # Screenshots
 ![PhotoConsequences](https://i.imgur.com/H1t6gIu.png)
@@ -12,10 +22,10 @@ Just open ``PhotoConsequences.sln`` file in visual studio and run build task
 # Supported platforms
 Windows with .NET 5.0
 
-# License
+# License and trademarks
 MIT License
 
-Copyright (c) 2020 140bpmdubstep
+Copyright (c) 2022 140bpmdubstep
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
