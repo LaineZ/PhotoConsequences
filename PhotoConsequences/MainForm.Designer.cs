@@ -86,9 +86,9 @@ namespace PhotoConsequences
             this.VendorHdr,
             this.ProductHdr});
             this.listPlugins.HideSelection = false;
-            this.listPlugins.Location = new System.Drawing.Point(6, 22);
+            this.listPlugins.Location = new System.Drawing.Point(5, 24);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(337, 239);
+            this.listPlugins.Size = new System.Drawing.Size(289, 256);
             this.listPlugins.TabIndex = 0;
             this.listPlugins.TabStop = false;
             this.listPlugins.UseCompatibleStateImageBehavior = false;
@@ -110,9 +110,9 @@ namespace PhotoConsequences
             // openPluginEditorBtn
             // 
             this.openPluginEditorBtn.Enabled = false;
-            this.openPluginEditorBtn.Location = new System.Drawing.Point(10, 145);
+            this.openPluginEditorBtn.Location = new System.Drawing.Point(9, 155);
             this.openPluginEditorBtn.Name = "openPluginEditorBtn";
-            this.openPluginEditorBtn.Size = new System.Drawing.Size(118, 22);
+            this.openPluginEditorBtn.Size = new System.Drawing.Size(101, 24);
             this.openPluginEditorBtn.TabIndex = 2;
             this.openPluginEditorBtn.Text = "Plugin editor";
             this.openPluginEditorBtn.UseVisualStyleBackColor = true;
@@ -124,9 +124,9 @@ namespace PhotoConsequences
             | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox1.Controls.Add(this.groupBoxOptions);
             this.groupBox1.Controls.Add(this.listPlugins);
-            this.groupBox1.Location = new System.Drawing.Point(0, 52);
+            this.groupBox1.Location = new System.Drawing.Point(0, 56);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(349, 448);
+            this.groupBox1.Size = new System.Drawing.Size(299, 480);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Plugins";
@@ -144,9 +144,9 @@ namespace PhotoConsequences
             this.groupBoxOptions.Controls.Add(this.openPluginEditorBtn);
             this.groupBoxOptions.Controls.Add(this.outputBox);
             this.groupBoxOptions.Controls.Add(this.label1);
-            this.groupBoxOptions.Location = new System.Drawing.Point(6, 267);
+            this.groupBoxOptions.Location = new System.Drawing.Point(5, 286);
             this.groupBoxOptions.Name = "groupBoxOptions";
-            this.groupBoxOptions.Size = new System.Drawing.Size(337, 173);
+            this.groupBoxOptions.Size = new System.Drawing.Size(289, 185);
             this.groupBoxOptions.TabIndex = 3;
             this.groupBoxOptions.TabStop = false;
             this.groupBoxOptions.Text = "Plugin processing options";
@@ -154,18 +154,18 @@ namespace PhotoConsequences
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 76);
+            this.label6.Location = new System.Drawing.Point(9, 81);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(91, 14);
+            this.label6.Size = new System.Drawing.Size(79, 15);
             this.label6.TabIndex = 17;
             this.label6.Text = "Sample rate:";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 113);
+            this.label4.Location = new System.Drawing.Point(9, 121);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 14);
+            this.label4.Size = new System.Drawing.Size(31, 15);
             this.label4.TabIndex = 11;
             this.label4.Text = "Wet:";
             // 
@@ -178,19 +178,19 @@ namespace PhotoConsequences
             "Hue",
             "Saturation",
             "Value"});
-            this.inputBox.Location = new System.Drawing.Point(182, 19);
+            this.inputBox.Location = new System.Drawing.Point(156, 20);
             this.inputBox.Name = "inputBox";
-            this.inputBox.Size = new System.Drawing.Size(149, 22);
+            this.inputBox.Size = new System.Drawing.Size(128, 23);
             this.inputBox.TabIndex = 15;
             this.inputBox.SelectedIndexChanged += new System.EventHandler(this.inputBox_SelectedIndexChanged);
             // 
             // trackWet
             // 
             this.trackWet.Enabled = false;
-            this.trackWet.Location = new System.Drawing.Point(51, 103);
+            this.trackWet.Location = new System.Drawing.Point(44, 110);
             this.trackWet.Maximum = 100;
             this.trackWet.Name = "trackWet";
-            this.trackWet.Size = new System.Drawing.Size(280, 45);
+            this.trackWet.Size = new System.Drawing.Size(240, 45);
             this.trackWet.TabIndex = 10;
             this.trackWet.Value = 100;
             this.trackWet.ValueChanged += new System.EventHandler(this.trackWet_ValueChanged);
@@ -198,15 +198,15 @@ namespace PhotoConsequences
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(7, 22);
+            this.label5.Location = new System.Drawing.Point(6, 24);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(147, 14);
+            this.label5.Size = new System.Drawing.Size(127, 15);
             this.label5.TabIndex = 14;
             this.label5.Text = "Input image channel:";
             // 
             // sampleRateInput
             // 
-            this.sampleRateInput.Location = new System.Drawing.Point(182, 74);
+            this.sampleRateInput.Location = new System.Drawing.Point(156, 79);
             this.sampleRateInput.Maximum = new decimal(new int[] {
             192000,
             0,
@@ -218,7 +218,7 @@ namespace PhotoConsequences
             0,
             0});
             this.sampleRateInput.Name = "sampleRateInput";
-            this.sampleRateInput.Size = new System.Drawing.Size(149, 23);
+            this.sampleRateInput.Size = new System.Drawing.Size(128, 23);
             this.sampleRateInput.TabIndex = 16;
             this.sampleRateInput.Value = new decimal(new int[] {
             44100,
@@ -229,9 +229,9 @@ namespace PhotoConsequences
             // removePlugBtn
             // 
             this.removePlugBtn.Enabled = false;
-            this.removePlugBtn.Location = new System.Drawing.Point(132, 145);
+            this.removePlugBtn.Location = new System.Drawing.Point(113, 155);
             this.removePlugBtn.Name = "removePlugBtn";
-            this.removePlugBtn.Size = new System.Drawing.Size(93, 22);
+            this.removePlugBtn.Size = new System.Drawing.Size(80, 24);
             this.removePlugBtn.TabIndex = 12;
             this.removePlugBtn.Text = "Remove";
             this.removePlugBtn.UseVisualStyleBackColor = true;
@@ -245,18 +245,18 @@ namespace PhotoConsequences
             this.outputBox.Items.AddRange(new object[] {
             "Left",
             "Right"});
-            this.outputBox.Location = new System.Drawing.Point(182, 46);
+            this.outputBox.Location = new System.Drawing.Point(156, 49);
             this.outputBox.Name = "outputBox";
-            this.outputBox.Size = new System.Drawing.Size(149, 22);
+            this.outputBox.Size = new System.Drawing.Size(128, 23);
             this.outputBox.TabIndex = 4;
             this.outputBox.SelectedIndexChanged += new System.EventHandler(this.outputBox_SelectedIndexChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 50);
+            this.label1.Location = new System.Drawing.Point(9, 54);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(154, 14);
+            this.label1.Size = new System.Drawing.Size(133, 15);
             this.label1.TabIndex = 3;
             this.label1.Text = "Output audio channel:";
             // 
@@ -271,7 +271,7 @@ namespace PhotoConsequences
             this.toolOpenImageBtn});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(944, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(809, 25);
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -281,7 +281,7 @@ namespace PhotoConsequences
             this.toolUndoBtn.Image = ((System.Drawing.Image)(resources.GetObject("toolUndoBtn.Image")));
             this.toolUndoBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolUndoBtn.Name = "toolUndoBtn";
-            this.toolUndoBtn.Size = new System.Drawing.Size(39, 22);
+            this.toolUndoBtn.Size = new System.Drawing.Size(35, 22);
             this.toolUndoBtn.Text = "Undo";
             this.toolUndoBtn.Click += new System.EventHandler(this.undoBtn_Click);
             // 
@@ -291,7 +291,7 @@ namespace PhotoConsequences
             this.toolApplyBtn.Image = global::PhotoConsequences.Properties.Resources.check_mark_square;
             this.toolApplyBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolApplyBtn.Name = "toolApplyBtn";
-            this.toolApplyBtn.Size = new System.Drawing.Size(146, 22);
+            this.toolApplyBtn.Size = new System.Drawing.Size(129, 22);
             this.toolApplyBtn.Text = "Apply FX on image";
             this.toolApplyBtn.Click += new System.EventHandler(this.toolApplyBtn_Click);
             // 
@@ -300,15 +300,15 @@ namespace PhotoConsequences
             this.toolAddVstBtn.Image = global::PhotoConsequences.Properties.Resources.ic_add_18pt;
             this.toolAddVstBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolAddVstBtn.Name = "toolAddVstBtn";
-            this.toolAddVstBtn.Size = new System.Drawing.Size(97, 22);
-            this.toolAddVstBtn.Text = "Add VST Fx";
+            this.toolAddVstBtn.Size = new System.Drawing.Size(111, 22);
+            this.toolAddVstBtn.Text = "Add VST Effect";
             this.toolAddVstBtn.Click += new System.EventHandler(this.toolAddVstBtn_Click);
             // 
             // toolRemoveAllFX
             // 
             this.toolRemoveAllFX.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolRemoveAllFX.Name = "toolRemoveAllFX";
-            this.toolRemoveAllFX.Size = new System.Drawing.Size(102, 22);
+            this.toolRemoveAllFX.Size = new System.Drawing.Size(89, 22);
             this.toolRemoveAllFX.Text = "Remove all FX";
             this.toolRemoveAllFX.Click += new System.EventHandler(this.toolRemoveAllFX_Click);
             // 
@@ -317,7 +317,7 @@ namespace PhotoConsequences
             this.toolOpenImageBtn.Image = global::PhotoConsequences.Properties.Resources.ic_open_in_browser_18pt;
             this.toolOpenImageBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolOpenImageBtn.Name = "toolOpenImageBtn";
-            this.toolOpenImageBtn.Size = new System.Drawing.Size(97, 22);
+            this.toolOpenImageBtn.Size = new System.Drawing.Size(87, 22);
             this.toolOpenImageBtn.Text = "Open image";
             this.toolOpenImageBtn.Click += new System.EventHandler(this.toolOpenImageBtn_Click);
             // 
@@ -349,9 +349,9 @@ namespace PhotoConsequences
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelImage.AutoScroll = true;
             this.panelImage.Controls.Add(this.pictureBox);
-            this.panelImage.Location = new System.Drawing.Point(355, 52);
+            this.panelImage.Location = new System.Drawing.Point(304, 56);
             this.panelImage.Name = "panelImage";
-            this.panelImage.Size = new System.Drawing.Size(589, 448);
+            this.panelImage.Size = new System.Drawing.Size(505, 480);
             this.panelImage.TabIndex = 5;
             // 
             // menuStrip
@@ -361,7 +361,8 @@ namespace PhotoConsequences
             this.aboutToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(944, 24);
+            this.menuStrip.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
+            this.menuStrip.Size = new System.Drawing.Size(809, 24);
             this.menuStrip.TabIndex = 6;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -375,14 +376,14 @@ namespace PhotoConsequences
             this.exportToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.empty;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newProjectBtn_Click);
             // 
@@ -390,7 +391,7 @@ namespace PhotoConsequences
             // 
             this.openToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.computer_folder_open;
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.loadProjBtn_Click);
             // 
@@ -399,44 +400,47 @@ namespace PhotoConsequences
             this.saveToolStripMenuItem.Enabled = false;
             this.saveToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.card_memory_sd;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Enabled = false;
+            this.saveAsToolStripMenuItem.Image = global::PhotoConsequences.Properties.Resources.card_memory_sd;
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveAsToolStripMenuItem.Text = "Save as...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsProjBtn_Click);
             // 
             // exportToolStripMenuItem
             // 
             this.exportToolStripMenuItem.Enabled = false;
+            this.exportToolStripMenuItem.ForeColor = System.Drawing.SystemColors.ControlText;
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exportToolStripMenuItem.Text = "Export image";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.toolSaveimgBtn_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(944, 504);
+            this.ClientSize = new System.Drawing.Size(809, 540);
             this.Controls.Add(this.panelImage);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.toolStrip1);
