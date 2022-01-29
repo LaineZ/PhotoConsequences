@@ -239,7 +239,14 @@ namespace PhotoConsequences
 
         private void openPluginEditorBtn_Click(object sender, EventArgs e)
         {
-            Rack.Plugins[listPlugins.SelectedItems[0].Index].ShowEditor(this);
+            if (listPlugins.SelectedItems.Count > 0)
+            {
+                Rack.Plugins[listPlugins.SelectedItems[0].Index].ShowEditor(this);
+            }
+            else
+            {
+                Rack.Plugins[0].ShowEditor(this);
+            }
         }
 
         private void toolApplyBtn_Click(object sender, EventArgs e)

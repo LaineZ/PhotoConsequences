@@ -8,8 +8,8 @@
     <Authors>140bpmdubstep</Authors>
     <Company>140bpmdubstep</Company>
     <Description>Apply VST Effects on images</Description>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
-    <FileVersion>1.2.0.0</FileVersion>
+    <AssemblyVersion>1.2.1.0</AssemblyVersion>
+    <FileVersion>1.2.1.0</FileVersion>
     <PackageIcon>icon.png</PackageIcon>
     <PackageIconUrl />
   </PropertyGroup>
