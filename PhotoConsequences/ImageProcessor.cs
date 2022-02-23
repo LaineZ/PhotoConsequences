@@ -129,7 +129,7 @@ namespace PhotoConsequences
                     switch (ChainedPlugin.ImageProcessingInput)
                     {
                         case Channel.Hue:
-                            hue = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
+                            hue = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 360.0) * ChainedPlugin.Wet;
                             break;
                         case Channel.Saturation:
                             saturation = (float)Math.Clamp(outputBuffers[processingBuffer][(int)size.Width * y + x], 0.0, 1.0) * ChainedPlugin.Wet;
