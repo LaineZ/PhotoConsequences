@@ -31,5 +31,5 @@ base64 = "0.13.0"
 messagebox-x11 = { git = "https://github.com/LaineZ/messagebox-x11" } 
 [target.'cfg(windows)'.dependencies]
 msgbox = "0.7.0"
-[target.'cfg(macos)'.dependencies]
+[target.'cfg(target_os = "macos")'.dependencies]
 msgbox = "0.7.0"
