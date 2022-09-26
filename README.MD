@@ -1,26 +1,26 @@
 # PhotoConsequences
-![PhotoConsequences](/PhotoConsequences/Resources/icon.png)
+![PhotoConsequences](/resources/icon.png)
 
 This software allows you apply almost any VST™ 2.4 effect and bound audio VST™ buffers on image channels **(hue, saturation, value)**. Combination of this parameters can achieve interesting effects on image. **Feel free to experement**!
 
 **This software currently in development. breakable changes and random bugs are inevitable.**
 
 # Building
-Just open ``PhotoConsequences.sln`` file in visual studio and run build task. 
-
-**Or** run build scripts in PhotoConsequences directory
-
-``build-shared.bat`` - builds shared runtime build
-
-``build.bat`` - builds bundled runtime build
-
-Build results will be saved in build directory
+* Clone this repository
+* Run ``cargo build --release`` command
 
 # Screenshots
-![PhotoConsequences](https://i.imgur.com/H1t6gIu.png)
+![PhotoConsequences](/resources/screenshoot1.png)
+
+![PhotoConsequences](/resources/screenshoot2.png)
 
 # Supported platforms
-Windows with .NET 5.0
+
+**Windows**
+
+**Linux** (also supports plugins via WINE using bridging software like yabridgectl)
+
+**macOS** (untested; but should work without problems)
 
 # License and trademarks
 MIT License
@@ -45,4 +45,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-VST is a trademark of Steinberg Media Technologies GmbH.
+VST™ is a trademark of Steinberg Media Technologies GmbH.
