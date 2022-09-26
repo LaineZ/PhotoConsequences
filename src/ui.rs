@@ -185,7 +185,7 @@ impl State {
                     let mut sample_rate = name.sample_rate;
                     ui.label("Sample rate:");
                     ui.separator();
-                    if ui.add(egui::Slider::new(&mut sample_rate, 1000.0..=192000.0).suffix("Hz")).changed() {
+                    if ui.add(egui::Slider::new(&mut sample_rate, 1102.0..=768000.0).suffix("Hz")).changed() {
                         action = Some(Action::ChangeSampleRate(idx, sample_rate));
                     }
                 });
@@ -379,7 +379,7 @@ impl State {
                         }
                     });
                     if ui.button("❎ Exit").clicked() {
-                        std::process::exit(0)
+                        self.modal = ModalWindows::Exit;
                     }
                 });
 
