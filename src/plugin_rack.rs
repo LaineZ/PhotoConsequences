@@ -218,6 +218,10 @@ impl PluginRack {
         Ok(())
     }
 
+    pub fn compute_complete_percentage(&self) -> usize {
+        self.position.checked_div(self.total).unwrap_or(0) * 100
+    }
+
     pub fn load_uninitialzed_plugins(&mut self) -> anyhow::Result<()> {
         for plugin in &mut self.plugins {
             if let Ok(mut loader) = PluginLoader::load(&plugin.path, Arc::clone(&self.host)) {

@@ -129,8 +129,8 @@ impl State {
                 body.row(20.0, |mut row| {
                     row.col(|ui| {
                         ui.label(format!("{}", name.get_path().display())).on_hover_text("This plugin is not initialized\nEffect configuration is preserved");
-                     });
-                     row.col(|ui| {
+                    });
+                    row.col(|ui| {
                         if ui.button("❎").on_hover_text("Remove").clicked() {
                             action = Some(Action::Remove(idx));
                         }
@@ -338,7 +338,7 @@ impl State {
         _ => {}
         }
         egui::TopBottomPanel::bottom("statusbar").show(context, |ui| {
-            ui.label(format!("Memory used: {} MiB Processed:", self.rack.calculate_memory_size() / 1024 / 1024));
+            ui.label(format!("Memory used: {} MiB Processed: {}%", self.rack.calculate_memory_size() / 1024 / 1024, self.rack.compute_complete_percentage()));
         });
         egui::SidePanel::left("left_panel").show(context, |ui| {
             menu::bar(ui, |ui| {
