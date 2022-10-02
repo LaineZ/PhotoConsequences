@@ -17,13 +17,17 @@ pub mod ui_enums;
 pub mod editor_wrapper;
 pub mod image_generators;
 
+
+
+pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 fn main() {
     let event_loop = winit::event_loop::EventLoopBuilder::with_user_event().build();
     let window = winit::window::WindowBuilder::new()
         .with_decorations(true)
         .with_resizable(true)
         .with_transparent(false)
-        .with_title("PhotoConsequences")
+        .with_title(format!("PhotoConsequences {}", VERSION))
         .build(&event_loop)
         .unwrap();
 
@@ -62,12 +66,9 @@ fn main() {
 
                 let output_frame = match renderer.surface.get_current_texture() {
                     Ok(frame) => frame,
-                    Err(wgpu::SurfaceError::Outdated) => {
+                    Err(wgpu::SurfaceError::Outdated) | Err(wgpu::SurfaceError::Timeout) => {
                         return;
-                    }
-                    Err(wgpu::SurfaceError::Timeout) => {
-                        return;
-                    }
+                    },
                     Err(e) => {
                         eprintln!("Dropped frame with error: {}", e);
                         return;

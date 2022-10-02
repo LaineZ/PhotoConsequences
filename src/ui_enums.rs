@@ -10,13 +10,15 @@ pub enum Action {
     ChangeSampleRate(usize, f32)
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum ModalWindows {
     Exit,
     ExitNew,
+    About,
     None
 }
 
-pub enum SaveDialogVariant {
+pub enum DialogVariant {
     Yes,
     No,
     Cancel,

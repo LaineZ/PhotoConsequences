@@ -10,7 +10,7 @@ use winit::{event_loop::EventLoopWindowTarget, window::WindowId};
 
 use crate::{
     plugin_rack::{PluginRack, InputChannelType},
-    renderer::{self, Renderer}, msgboxwrapper::messagebox, ui_enums::{ModalWindows, Action, SaveDialogVariant}, image_generators,
+    renderer::{self, Renderer}, msgboxwrapper::messagebox, ui_enums::{ModalWindows, Action, DialogVariant}, image_generators,
 };
 
 pub struct State {
@@ -224,9 +224,9 @@ impl State {
         self.save_path = None;
     }
 
-    fn exit_window(&mut self, context: &Context) -> SaveDialogVariant {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return SaveDialogVariant::No }
-        let mut res = SaveDialogVariant::None;
+    fn exit_window(&mut self, context: &Context) -> DialogVariant {
+        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return DialogVariant::No }
+        let mut res = DialogVariant::None;
         egui::Window::new("Project management")
         .collapsible(false)
         .auto_sized()
@@ -240,16 +240,40 @@ impl State {
 
             ui.horizontal(|ui| {
                 if ui.button("✅ Yes").clicked() {
-                    res = SaveDialogVariant::Yes;
+                    res = DialogVariant::Yes;
                 }
                 if ui.button("❎ No").clicked() {
-                    res = SaveDialogVariant::No;
+                    res = DialogVariant::No;
                 }
                 if ui.button("🚫 Cancel").clicked() {
                     self.modal = ModalWindows::None;
-                    res = SaveDialogVariant::Cancel;
+                    res = DialogVariant::Cancel;
                 }
             });
+         });
+
+        res
+    }
+
+
+    fn about_window(&mut self, context: &Context) -> DialogVariant {
+        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return DialogVariant::No }
+        let mut res = DialogVariant::None;
+        egui::Window::new("About")
+        .collapsible(false)
+        .auto_sized()
+        .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+        .show(context, |ui| {
+            let text = RichText::new("PhotoConsequences").heading();
+            ui.label(text);
+            ui.label(format!("Version: {}", crate::VERSION));
+            ui.label("Tool to apply VST™ effects on the images");
+            ui.label("VST™ is a trademark of Steinberg Media Technologies GmbH.");
+
+            if ui.button("Ok").clicked() {
+                self.modal = ModalWindows::None;
+                res = DialogVariant::Cancel;
+            }
          });
 
         res
@@ -311,11 +335,11 @@ impl State {
         match self.modal {
             ModalWindows::Exit => {
                 match self.exit_window(context) {
-                    SaveDialogVariant::Yes => {
+                    DialogVariant::Yes => {
                         self.save_project_ui();
                         self.exit(renderer);
                     }
-                    SaveDialogVariant::No => {
+                    DialogVariant::No => {
                         self.exit(renderer);
                     },
                     _ => {}
@@ -323,19 +347,24 @@ impl State {
             },
             ModalWindows::ExitNew => {
                 match self.exit_window(context) {
-                    SaveDialogVariant::Yes => {
+                    DialogVariant::Yes => {
                         self.save_project_ui();
                         self.init(renderer);
                         self.modal = ModalWindows::None;
                     }
-                    SaveDialogVariant::No => {
+                    DialogVariant::No => {
                         self.init(renderer);
                         self.modal = ModalWindows::None;
                     },
                     _ => {}
                 }
             }
-        _ => {}
+            ModalWindows::About => {
+                match  self.about_window(context) {
+                    _ => {}
+                }
+            }
+            _ => {}
         }
         egui::TopBottomPanel::bottom("statusbar").show(context, |ui| {
             ui.label(format!("Memory used: {} MiB Processed: {}%", self.rack.calculate_memory_size() / 1024 / 1024, self.rack.compute_complete_percentage()));
@@ -388,6 +417,15 @@ impl State {
                         self.cleanup_image(renderer);
                         self.rack.images.clear();
                         self.rack.images.push(image_generators::generate_noise());
+                    }
+                });
+
+                ui.menu_button("About", |ui| {
+                    if ui.button("About").clicked() {
+                        self.modal = ModalWindows::About;
+                    }
+                    if ui.button("GitHub repository page").clicked() {
+                        webbrowser::open("http://github.com/LaineZ/PhotoConsequences").unwrap();
                     }
                 });
             });

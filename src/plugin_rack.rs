@@ -342,7 +342,13 @@ impl PluginRack {
         let full_process_time = std::time::Instant::now();
 
         for plugin in &mut self.plugins {
-            let instance = plugin.instance.as_mut().unwrap();
+            let instance = plugin.instance.as_mut();
+
+            if instance.is_none() {
+                continue;
+            }
+
+            let instance = instance.unwrap();
             //let start = std::time::Instant::now();
             let input_count = instance.get_info().inputs as usize;
             let output_count = instance.get_info().outputs as usize;
