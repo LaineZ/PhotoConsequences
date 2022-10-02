@@ -139,26 +139,29 @@ impl PluginRackInstance {
     }
 
     fn initialize(&mut self) -> Result<()> {
-        let inst = self.instance.as_mut().unwrap();
-        inst.init();
-        self.editor = EditorWrapper::new(inst.get_editor());
-        if !self.plugin_data.is_empty() {
-            println!("found a plugin data LOADING NOW!");
-            self.load_block()?;
+        if let Some(inst) = self.instance.as_mut() {
+            inst.init();
+            self.editor = EditorWrapper::new(inst.get_editor());
+            if !self.plugin_data.is_empty() {
+                println!("found a plugin data LOADING NOW!");
+                self.load_block()?;
+            }
         }
         Ok(())
     }
 
     fn save_block(&mut self) {
-        let inst = self.instance.as_mut().unwrap();
-        let bank_data = inst.get_parameter_object().get_bank_data();
-        self.plugin_data = base64::encode(bank_data);
+        if let Some(inst) = self.instance.as_mut() {
+            let bank_data = inst.get_parameter_object().get_bank_data();
+            self.plugin_data = base64::encode(bank_data);
+        }
     }
 
     fn load_block(&mut self) -> Result<()> {
-        let inst = self.instance.as_mut().unwrap();
-        inst.get_parameter_object()
-            .load_bank_data(&base64::decode(&self.plugin_data)?);
+        if let Some(inst) = self.instance.as_mut() {
+            inst.get_parameter_object()
+                .load_bank_data(&base64::decode(&self.plugin_data)?);
+        }
         Ok(())
     }
 }
@@ -290,7 +293,9 @@ impl PluginRack {
 
     pub fn remove_plugin(&mut self, id: usize) {
         println!("removing: {}", id);
-        self.plugins[id].instance.as_mut().unwrap().suspend();
+        if let Some(instance) = self.plugins[id].instance.as_mut() {
+            instance.suspend();
+        }
         self.plugins.remove(id);
     }
 
@@ -448,7 +453,7 @@ impl PluginRack {
             self.total = self.images.last().unwrap().pixels().len();
         }
 
-        if ((self.total as f32 * 1.5) as usize) < self.position {
+        if ((self.total as f32 * 1.2) as usize) < self.position {
             self.finished = true;
         } else {
             self.position += self.block_size as usize;
