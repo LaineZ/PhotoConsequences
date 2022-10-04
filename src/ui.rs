@@ -256,9 +256,7 @@ impl State {
     }
 
 
-    fn about_window(&mut self, context: &Context) -> DialogVariant {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return DialogVariant::No }
-        let mut res = DialogVariant::None;
+    fn about_window(&mut self, context: &Context) {
         egui::Window::new("About")
         .collapsible(false)
         .auto_sized()
@@ -272,11 +270,8 @@ impl State {
 
             if ui.button("Ok").clicked() {
                 self.modal = ModalWindows::None;
-                res = DialogVariant::Cancel;
             }
-         });
-
-        res
+        });
     }
 
     fn save_project_as_ui(&mut self) {
@@ -360,9 +355,7 @@ impl State {
                 }
             }
             ModalWindows::About => {
-                match  self.about_window(context) {
-                    _ => {}
-                }
+                self.about_window(context);
             }
             _ => {}
         }
@@ -421,10 +414,10 @@ impl State {
                 });
 
                 ui.menu_button("About", |ui| {
-                    if ui.button("About").clicked() {
+                    if ui.button("ℹ About").clicked() {
                         self.modal = ModalWindows::About;
                     }
-                    if ui.button("GitHub repository page").clicked() {
+                    if ui.button("⬌ GitHub repository page").clicked() {
                         webbrowser::open("http://github.com/LaineZ/PhotoConsequences").unwrap();
                     }
                 });
