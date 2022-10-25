@@ -56,8 +56,10 @@ impl EditorWrapper {
     }
 
     pub fn close(&mut self, window_id: WindowId) {
-        if self.window_id.is_some() && self.window_id.unwrap() == window_id {
-            self.editor.as_mut().unwrap().close()
+        if let Some(window) = self.window_id {
+            if window == window_id {
+                self.editor.as_mut().unwrap().close()
+            }
         }
     }
 }

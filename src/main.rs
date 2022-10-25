@@ -33,7 +33,7 @@ fn main() {
 
 
     let mut renderer = Renderer::new(&window).unwrap_or_else(|op| {
-        messagebox("Failed to initialize rendering engine", &format!("PhotoConsequneces was unable to initialize graphics engine due to error:\n{}", op));
+        messagebox("Failed to initialize rendering engine", &format!("PhotoConsequences was unable to initialize graphics engine due to error:\n{}", op));
         std::process::exit(1);
     });
 
@@ -139,6 +139,7 @@ fn main() {
             MainEventsCleared | UserEvent(Event::RequestRedraw) => {
                 window.request_redraw();
             }
+            
             WindowEvent { event, window_id } => match event {
                 winit::event::WindowEvent::Resized(size) => {
                     // Resize with 0 width and height is used by winit to signal a minimize event on Windows.

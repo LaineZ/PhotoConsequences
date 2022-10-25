@@ -7,75 +7,15 @@ use std::{
 use palette::{FromColor, Hsva, RgbHue, Srgba};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use winit::{
-    dpi::LogicalSize,
-    event_loop::EventLoopWindowTarget,
-    window::{Window, WindowId},
-};
-
 use image::io::Reader as ImageReader;
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-use crate::renderer;
+use crate::editor_wrapper::EditorWrapper;
 use anyhow::Result;
 
 use vst::{
-    editor::Editor,
     host::{HostBuffer, Host, PluginInstance, PluginLoader},
     prelude::Plugin,
 };
-
-
-#[derive(Default)]
-pub struct EditorWrapper {
-    pub editor: Option<Box<dyn Editor>>,
-    pub window_id: Option<WindowId>,
-}
-
-impl EditorWrapper {
-    pub fn new(editor: Option<Box<dyn Editor>>) -> Self {
-        Self {
-            editor,
-            window_id: None,
-        }
-    }
-
-    pub fn default() -> Self {
-        Self {
-            editor: None,
-            window_id: None,
-        }
-    }
-
-    pub fn show(&mut self, event_loop: &EventLoopWindowTarget<renderer::Event>) -> Result<Window> {
-        println!("opening editor");
-
-        if let Some(editor) = &mut self.editor {
-            let window = winit::window::WindowBuilder::new()
-                .with_resizable(false)
-                .with_inner_size(LogicalSize::new(editor.size().0, editor.size().1))
-                .build(event_loop)?;
-            self.window_id = Some(window.id());
-            let whandle = window.raw_window_handle();
-            match whandle {
-                RawWindowHandle::AppKit(handle) => editor.open(handle.ns_view as _),
-                RawWindowHandle::Xlib(handle) => editor.open(handle.window as _),
-                RawWindowHandle::Xcb(handle) => editor.open(handle.window as _),
-                RawWindowHandle::Win32(handle) => editor.open(handle.hwnd as _),
-                _ => anyhow::bail!("GUI Editor is not available for this platform"),
-            };
-            Ok(window)
-        } else {
-            anyhow::bail!("GUI Editor is not available for this plugin")
-        }
-    }
-
-    pub fn close(&mut self, window_id: WindowId) {
-        if self.window_id.is_some() && self.window_id.unwrap() == window_id {
-            self.editor.as_mut().unwrap().close()
-        }
-    }
-}
 
 pub struct PluginHost;
 
@@ -307,7 +247,7 @@ impl PluginRack {
         let img = self.images.last().unwrap().clone();
 
         if self.images.len() >= 2 {
-            println!("{}", img.len());
+            //println!("{}", img.len());
             self.images.remove(1);
         }
 
@@ -468,7 +408,7 @@ impl PluginRack {
 
         if full_process_time.elapsed().as_millis() > 33 {
             self.block_size = (self.block_size - 512).clamp(128, i64::MAX);
-            println!("лагает пиздец, занижаем блоки {}", self.block_size);
+            println!("decreasing block size: {}", self.block_size);
         }
     }
 }

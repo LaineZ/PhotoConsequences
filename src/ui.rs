@@ -6,7 +6,7 @@ use egui::{
 use egui_extras::{Size, TableBuilder, TableBody};
 use std::{path::PathBuf, io::Read, time::Instant};
 use vst::prelude::Plugin;
-use winit::{event_loop::EventLoopWindowTarget, window::WindowId};
+use winit::{event_loop::EventLoopWindowTarget, window::WindowId, dpi::PhysicalSize};
 
 use crate::{
     plugin_rack::{PluginRack, InputChannelType},
@@ -38,6 +38,18 @@ impl State {
         self.cleanup_image(renderer);
         self.rack.load_image(file)?;
         Ok(())
+    }
+
+    pub fn resize_editors(&mut self, renderer: &mut Renderer) {
+        for window in renderer.windows.iter_mut() {
+            for plugin in self.rack.plugins.iter_mut() {
+                if let Some(editor) = &mut plugin.editor.editor {
+                    if editor.is_open() && plugin.editor.window_id == Some(window.id()) {
+                        window.set_inner_size(PhysicalSize::new(editor.size().0, editor.size().1));
+                    }
+                }
+            }
+        }
     }
 
     pub fn open_editor(
@@ -165,7 +177,7 @@ impl State {
                     ui.separator();
                     let mut output = name.output_channel;
                     let prefix = match output {
-                        0 => { "Left " }
+                        0 => { "Left/Mono " }
                         1 => { "Right " }
                         _ => { "" }
                     };
@@ -314,6 +326,8 @@ impl State {
 
     pub fn update(&mut self, renderer: &mut Renderer) {
         self.rack.process_next();
+        self.resize_editors(renderer);
+        //println!("{:#?}", renderer.windows);
 
         if !self.rack.is_finished() && self.timer.elapsed().as_millis() > 100 {
             renderer.texture = None;
