@@ -1,10 +1,9 @@
+use egui_platform_winit::{Platform, PlatformDescriptor};
 use egui_wgpu_backend::ScreenDescriptor;
 use msgboxwrapper::messagebox;
 use renderer::{Renderer, Event};
 use ui::State;
-use winit::dpi::PhysicalSize;
 use winit::event::Event::*;
-use egui_winit_platform::{Platform, PlatformDescriptor};
 use std::iter;
 use std::time::Instant;
 use ::egui::FontDefinitions;
@@ -16,6 +15,7 @@ pub mod msgboxwrapper;
 pub mod ui_enums;
 pub mod editor_wrapper;
 pub mod image_generators;
+pub mod egui_platform_winit;
 
 
 
@@ -48,15 +48,14 @@ fn main() {
     });
 
     let mut state = State::new();
-    let mut resized = false;
 
     // We use the egui_wgpu_backend crate as the render backend
 
     let start_time = Instant::now();
     event_loop.run(move |event, event_loop, _control_flow| {
         // Pass the winit events to the platform integration.
-        platform.handle_event(&event);
-
+        platform.handle_event(&event, window.id());
+        
         match event {
             RedrawRequested(window_id) => {
                 if window_id != window.id() {
@@ -123,18 +122,6 @@ fn main() {
                 renderer.render_pass
                     .remove_textures(tdelta)
                     .expect("remove texture ok");
-
-                // weird workaround for main window rendering resolution bug
-                if !renderer.windows.is_empty() {
-                    let size = window.inner_size();
-                    if !resized {
-                        window.set_inner_size(PhysicalSize::new(size.width + 1, size.height + 1));
-                        window.set_inner_size(PhysicalSize::new(size.width - 1, size.height - 1));
-                        resized = true;
-                    }
-                } else {
-                    resized = false;
-                }
             }
             MainEventsCleared | UserEvent(Event::RequestRedraw) => {
                 window.request_redraw();
@@ -154,7 +141,6 @@ fn main() {
                 winit::event::WindowEvent::CloseRequested => {
                     println!("id: {:?}", window_id);
                     for _ in &renderer.windows {
-                        resized = false;
                         state.close_editor(window_id);
                     }
                     renderer.windows.retain(|w| window_id != w.id());
@@ -164,7 +150,7 @@ fn main() {
                 }
                 _ => {}
             },
-            _ => (),
+            _ => {},
         }
     });
 }
