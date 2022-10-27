@@ -2031,6 +2031,7 @@ dependencies = [
  "image",
  "messagebox-x11",
  "msgbox",
+ "num_cpus",
  "palette",
  "pollster",
  "rand",

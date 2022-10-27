@@ -29,7 +29,7 @@ pub struct PluginRack {
     finished: bool,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Serialize_repr, Deserialize_repr)]
+#[derive(PartialEq, Eq, Copy, Clone, Serialize_repr, Deserialize_repr, Debug)]
 #[repr(u8)]
 pub enum InputChannelType {
     Hue = 0,
@@ -178,7 +178,7 @@ impl PluginRack {
         Ok(())
     }
 
-    pub fn load_image(&mut self, file: PathBuf) -> anyhow::Result<()> {
+    pub fn load_image<P: AsRef<std::path::Path>>(&mut self, file: P) -> anyhow::Result<()> {
         self.images.clear();
         let img = ImageReader::open(file)?.decode()?;
         self.images.push(img.to_rgba8());
@@ -194,7 +194,7 @@ impl PluginRack {
         Ok(())
     }
 
-    pub fn save_image(&self, file: std::path::PathBuf) -> Result<(), image::ImageError> {
+    pub fn save_image<P: AsRef<std::path::Path>>(&self, file: P) -> Result<(), image::ImageError> {
         self.images.last().unwrap().save(file)
     }
 
@@ -240,7 +240,7 @@ impl PluginRack {
     }
 
     pub fn start_process(&mut self) {
-        if self.plugins.is_empty() {
+        if self.plugins.is_empty() || self.images.is_empty() {
             return;
         }
 
@@ -279,7 +279,7 @@ impl PluginRack {
             return;
         }
 
-        let full_process_time = std::time::Instant::now();
+        //let full_process_time = std::time::Instant::now();
 
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
@@ -402,13 +402,8 @@ impl PluginRack {
         if ((self.total as f32 * 1.2) as usize) < self.position {
             self.finished = true;
         } else {
-            self.position += self.block_size as usize;
+        self.position += self.block_size as usize;
             //println!("processing: {} {} {}", len, self.position, self.block_size);
-        }
-
-        if full_process_time.elapsed().as_millis() > 33 {
-            self.block_size = (self.block_size - 512).clamp(128, i64::MAX);
-            println!("decreasing block size: {}", self.block_size);
         }
     }
 }

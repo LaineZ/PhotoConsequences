@@ -27,6 +27,7 @@ serde_repr = "0.1"
 base64 = "0.13.0"
 webbrowser = "0.8.0"
 copypasta = "0.8"
+num_cpus = "1.13.1"
 
 [target.'cfg(unix)'.dependencies]
 messagebox-x11 = { git = "https://github.com/LaineZ/messagebox-x11" } 

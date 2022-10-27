@@ -82,6 +82,10 @@ impl Renderer {
         std::process::exit(0)
     }
 
+    pub fn cleanup_image(&mut self) {
+        self.texture = None;
+    }
+
     pub fn destroy_texture(&mut self) {
         if self.texture_native.is_some() {
             self.texture_native.as_ref().unwrap().destroy();

@@ -1,5 +1,6 @@
 use crate::plugin_rack::InputChannelType;
 
+#[derive(Debug)]
 pub enum Action {
     OpenEditor(usize),
     Remove(usize),

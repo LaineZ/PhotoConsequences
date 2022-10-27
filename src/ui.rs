@@ -30,12 +30,8 @@ impl State {
         }
     }
 
-    pub fn cleanup_image(&mut self, renderer: &mut Renderer) {
-        renderer.texture = None;
-    }
-
     pub fn load_image(&mut self, renderer: &mut Renderer, file: PathBuf) -> anyhow::Result<()> {
-        self.cleanup_image(renderer);
+        renderer.cleanup_image();
         self.rack.load_image(file)?;
         Ok(())
     }
@@ -88,7 +84,7 @@ impl State {
         proj_file.read_to_string(&mut proj_file_string)?;
         let instacnes: Vec<crate::plugin_rack::PluginRackInstance> = serde_json::from_str(&proj_file_string)?;
 
-        self.cleanup_image(renderer);
+        renderer.cleanup_image();
         renderer.windows.clear();
         self.rack = PluginRack::new();
 
@@ -154,7 +150,7 @@ impl State {
                 let inst = name.instance.as_ref().unwrap();
                 let info = inst.get_info();
                 row.col(|ui| {
-                    ui.label(format!("{} ({})", info.name, info.vendor))
+                    ui.label(&info.name)
                         .on_hover_text(
                         format!("Right-click for more options\n{} ({})\nCategory: {:?}\nInitial delay: {}\nI/O: {}/{}\n64 bit mixing support: {}", 
                         info.name, info.vendor, info.category, info.initial_delay, info.inputs, info.outputs, info.f64_precision));
@@ -201,7 +197,7 @@ impl State {
                         action = Some(Action::ChangeSampleRate(idx, sample_rate));
                     }
                 });
-
+                
                 row.col(|ui| {
                         ui.add_enabled_ui(self.rack.is_finished(), |ui| {
                             if ui.button("❎").on_hover_text("Remove").clicked() {
@@ -229,7 +225,7 @@ impl State {
     }
 
     fn init(&mut self, renderer: &mut Renderer) {
-        self.cleanup_image(renderer);
+        renderer.cleanup_image();
         renderer.windows.clear();
         renderer.destroy_texture();
         self.rack = PluginRack::new();
@@ -421,7 +417,7 @@ impl State {
 
                 ui.menu_button("Tools", |ui| {
                     if ui.button("⧯ Generate noise image").clicked() {
-                        self.cleanup_image(renderer);
+                        renderer.cleanup_image();
                         self.rack.images.clear();
                         self.rack.images.push(image_generators::generate_noise());
                     }
@@ -440,7 +436,7 @@ impl State {
             TableBuilder::new(ui)
                 .striped(true)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                .column(Size::initial(140.0).at_least(120.0))
+                .column(Size::initial(100.0).at_least(80.0))
                 .column(Size::remainder().at_least(80.0))
                 .resizable(false)
                 .body(|body| {
@@ -527,7 +523,7 @@ impl State {
                         }
                     } else {
                         if ui.button("☠ Cancel").clicked() {
-                            self.cleanup_image(renderer);
+                            renderer.cleanup_image();
                             self.rack.stop_process();
                         }
                     }
@@ -535,7 +531,7 @@ impl State {
 
                 ui.add_enabled_ui(self.rack.images.len() > 1 && self.rack.is_finished(), |ui| {
                     if ui.button("↻ Undo").clicked() {
-                        self.cleanup_image(renderer);
+                        renderer.cleanup_image();
                         self.rack.undo();
                     }
                 });
