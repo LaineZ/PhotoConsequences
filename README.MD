@@ -5,11 +5,22 @@ This software allows you apply almost any VSTâ„¢ 2.4 effect and bound audio VSTâ
 
 **This software currently in development. breakable changes and random bugs are inevitable.**
 
+# Interface modes (since 2.1.0)
+
+PhotoConsequences has 2 UI modes:
+
+* **CLI** - For batch image processing e.g frame sequences from videos. To run PhotoConsequences in this mode, you need use command like this: ```photoconsequences [project path] [input directory] [output directory]```. Program will be started in CLI mode automatically
+* **GUI** - Default UI mode. 
+
 # Building
+
+Build insturctions is typical for any Rust project
+
 * Clone this repository
 * Run ``cargo build --release`` command
 
-# Screenshots
+# Screenshots and other media
+
 ![PhotoConsequences](/resources/screenshoot1.png)
 
 ![PhotoConsequences](/resources/screenshoot2.png)

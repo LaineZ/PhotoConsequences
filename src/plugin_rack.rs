@@ -165,6 +165,14 @@ impl PluginRack {
         self.position.checked_div(self.total).unwrap_or(0) * 100
     }
 
+    pub fn get_processed_position(&self) -> usize {
+        self.position
+    }
+
+    pub fn get_processing_size(&self) -> usize {
+        self.total
+    }
+
     pub fn load_uninitialzed_plugins(&mut self) -> anyhow::Result<()> {
         for plugin in &mut self.plugins {
             if let Ok(mut loader) = PluginLoader::load(&plugin.path, Arc::clone(&self.host)) {

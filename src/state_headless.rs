@@ -34,10 +34,5 @@ impl StateHeadless {
     }
 
     pub fn process(&mut self) {
-        self.rack.start_process();
-
-        while !self.rack.is_finished() {
-            self.rack.process_next();
-        }
     }
 }
