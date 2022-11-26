@@ -1,5 +1,5 @@
 # PhotoConsequences
-![PhotoConsequences](/resources/icon.png)
+![PhotoConsequences](src/resources/icon.png)
 
 This software allows you apply almost any VST™ 2.4 effect and bound audio VST™ buffers on image channels **(hue, saturation, value)**. Combination of this parameters can achieve interesting effects on image. **Feel free to experement**!
 

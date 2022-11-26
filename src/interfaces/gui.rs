@@ -1,28 +1,55 @@
-use crate::VERSION;
 use crate::egui_platform_winit::{Platform, PlatformDescriptor};
-use egui_wgpu_backend::ScreenDescriptor;
 use crate::msgboxwrapper::messagebox;
-use crate::renderer::{Renderer, Event};
+use crate::renderer::{Event, Renderer};
 use crate::ui::State;
-use winit::event::Event::*;
+use crate::VERSION;
+use ::egui::FontDefinitions;
+use egui_wgpu_backend::ScreenDescriptor;
+use std::io::Cursor;
 use std::iter;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Instant;
-use ::egui::FontDefinitions;
+use winit::event::Event::*;
+use winit::window::Icon;
+
+use image::io::Reader as ImageReader;
 
 pub fn gui(args: Vec<String>) {
     let event_loop = winit::event_loop::EventLoopBuilder::with_user_event().build();
+
+    let mut bytes = include_bytes!("../resources/icon.png");
+    let img = ImageReader::new(Cursor::new(&mut bytes))
+        .with_guessed_format()
+        .unwrap()
+        .decode()
+        .unwrap();
+
+    let mut icon = None;
+
+    if let Ok(icn) = Icon::from_rgba(img.to_rgba8().to_vec(), img.width(), img.height()) {
+        icon = Some(icn);
+    } else {
+        println!("Unable set icon!");
+    }
+
     let window = winit::window::WindowBuilder::new()
         .with_decorations(true)
         .with_resizable(true)
         .with_transparent(false)
+        .with_window_icon(icon)
         .with_title(format!("PhotoConsequences {}", VERSION))
         .build(&event_loop)
         .unwrap();
 
     let mut renderer = Renderer::new(&window).unwrap_or_else(|op| {
-        messagebox("Failed to initialize rendering engine", &format!("PhotoConsequences was unable to initialize graphics engine due to error:\n{}", op));
+        messagebox(
+            "Failed to initialize rendering engine",
+            &format!(
+                "PhotoConsequences was unable to initialize graphics engine due to error:\n{}",
+                op
+            ),
+        );
         std::process::exit(1);
     });
 
@@ -38,15 +65,16 @@ pub fn gui(args: Vec<String>) {
 
     let mut state = State::new();
 
-
     if args.len() > 1 {
         let path_buf = PathBuf::from_str(&args[1]).unwrap();
-        state.load_project(&mut renderer, path_buf).unwrap_or_else(|error| { 
-            messagebox(
-                "Unable to load project",
-                &format!("{}\nDefault project will be loaded...", error.to_string()),
-            );
-        });
+        state
+            .load_project(&mut renderer, path_buf)
+            .unwrap_or_else(|error| {
+                messagebox(
+                    "Unable to load project",
+                    &format!("{}\nDefault project will be loaded...", error.to_string()),
+                );
+            });
     }
 
     // We use the egui_wgpu_backend crate as the render backend
@@ -55,7 +83,7 @@ pub fn gui(args: Vec<String>) {
     event_loop.run(move |event, event_loop, _control_flow| {
         // Pass the winit events to the platform integration.
         platform.handle_event(&event, window.id());
-        
+
         match event {
             RedrawRequested(window_id) => {
                 if window_id != window.id() {
@@ -67,7 +95,7 @@ pub fn gui(args: Vec<String>) {
                     Ok(frame) => frame,
                     Err(wgpu::SurfaceError::Outdated) | Err(wgpu::SurfaceError::Timeout) => {
                         return;
-                    },
+                    }
                     Err(e) => {
                         eprintln!("Dropped frame with error: {}", e);
                         return;
@@ -87,9 +115,11 @@ pub fn gui(args: Vec<String>) {
                 let paint_jobs = platform.context().tessellate(full_output.shapes);
 
                 let mut encoder =
-                    renderer.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                        label: Some("encoder"),
-                    });
+                    renderer
+                        .device
+                        .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                            label: Some("encoder"),
+                        });
 
                 // Upload all resources for the GPU.
                 let screen_descriptor = ScreenDescriptor {
@@ -98,13 +128,20 @@ pub fn gui(args: Vec<String>) {
                     scale_factor: window.scale_factor() as f32,
                 };
                 let tdelta: egui::TexturesDelta = full_output.textures_delta;
-                renderer.render_pass
+                renderer
+                    .render_pass
                     .add_textures(&renderer.device, &renderer.queue, &tdelta)
                     .expect("add texture ok");
-                renderer.render_pass.update_buffers(&renderer.device, &renderer.queue, &paint_jobs, &screen_descriptor);
+                renderer.render_pass.update_buffers(
+                    &renderer.device,
+                    &renderer.queue,
+                    &paint_jobs,
+                    &screen_descriptor,
+                );
 
                 // Record all render passes.
-                renderer.render_pass
+                renderer
+                    .render_pass
                     .execute(
                         &mut encoder,
                         &output_view,
@@ -119,14 +156,15 @@ pub fn gui(args: Vec<String>) {
                 // Redraw egui
                 output_frame.present();
 
-                renderer.render_pass
+                renderer
+                    .render_pass
                     .remove_textures(tdelta)
                     .expect("remove texture ok");
             }
             MainEventsCleared | UserEvent(Event::RequestRedraw) => {
                 window.request_redraw();
             }
-            
+
             WindowEvent { event, window_id } => match event {
                 winit::event::WindowEvent::Resized(size) => {
                     // Resize with 0 width and height is used by winit to signal a minimize event on Windows.
@@ -135,7 +173,9 @@ pub fn gui(args: Vec<String>) {
                     if window_id == window.id() && size.width > 0 && size.height > 0 {
                         renderer.surface_config.width = size.width;
                         renderer.surface_config.height = size.height;
-                        renderer.surface.configure(&renderer.device, &renderer.surface_config);
+                        renderer
+                            .surface
+                            .configure(&renderer.device, &renderer.surface_config);
                     }
                 }
                 winit::event::WindowEvent::CloseRequested => {
@@ -150,7 +190,7 @@ pub fn gui(args: Vec<String>) {
                 }
                 _ => {}
             },
-            _ => {},
+            _ => {}
         }
     });
 }
