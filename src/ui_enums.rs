@@ -8,7 +8,7 @@ pub enum Action {
     ChangeInputChannel(usize, InputChannelType),
     ChangeOutputChannel(usize, usize),
     ChangeWet(usize, f32),
-    ChangeSampleRate(usize, f32)
+    ChangeSampleRate(usize, f32),
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -16,7 +16,7 @@ pub enum ModalWindows {
     Exit,
     ExitNew,
     About,
-    None
+    None,
 }
 
 pub enum DialogVariant {

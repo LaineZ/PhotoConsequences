@@ -106,10 +106,7 @@ impl Platform {
     /// Handles the given winit event and updates the egui context. Should be called before starting a new frame with `start_frame()`.
     pub fn handle_event<T>(&mut self, winit_event: &Event<T>, main_window_id: WindowId) {
         match winit_event {
-            Event::WindowEvent {
-                window_id,
-                event,
-            } => match event {
+            Event::WindowEvent { window_id, event } => match event {
                 // Resize with 0 width and height is used by winit to signal a minimize event on Windows.
                 // See: https://github.com/rust-windowing/winit/issues/208
                 // There is nothing to do for minimize events, so it is ignored here. This solves an issue where
@@ -119,7 +116,9 @@ impl Platform {
                     height: 0,
                 }) => {}
                 Resized(physical_size) => {
-                    if *window_id != main_window_id { return }
+                    if *window_id != main_window_id {
+                        return;
+                    }
                     self.raw_input.screen_rect = Some(egui::Rect::from_min_size(
                         Default::default(),
                         vec2(physical_size.width as f32, physical_size.height as f32)
@@ -130,7 +129,9 @@ impl Platform {
                     scale_factor,
                     new_inner_size,
                 } => {
-                    if *window_id != main_window_id { return }
+                    if *window_id != main_window_id {
+                        return;
+                    }
                     self.scale_factor = *scale_factor;
                     self.raw_input.pixels_per_point = Some(*scale_factor as f32);
                     self.raw_input.screen_rect = Some(egui::Rect::from_min_size(

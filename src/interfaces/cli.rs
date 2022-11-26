@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use indicatif::{MultiProgress, ProgressStyle, ProgressBar};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 
 use crate::state_headless::StateHeadless;
 
@@ -16,8 +16,8 @@ pub fn cli(args: Vec<String>) -> anyhow::Result<()> {
         let image_export_path = Arc::new(PathBuf::from_str(&args[3])?);
 
         let cpus = num_cpus::get();
-        let mut paths = fs::read_dir(image_path)?
-            .collect::<Vec<Result<DirEntry, std::io::Error>>>();
+        let mut paths =
+            fs::read_dir(image_path)?.collect::<Vec<Result<DirEntry, std::io::Error>>>();
 
         paths.retain(|f| f.is_ok());
 
@@ -31,7 +31,6 @@ pub fn cli(args: Vec<String>) -> anyhow::Result<()> {
         )
         .unwrap()
         .progress_chars("##-");
-
 
         let pb = m.add(ProgressBar::new(100));
         pb.set_style(sty.clone());
@@ -49,9 +48,9 @@ pub fn cli(args: Vec<String>) -> anyhow::Result<()> {
 
                 let chunks: Vec<_> = paths_ar.chunks((path_size / cpus) + 1).collect();
                 let my_chunk = chunks[i];
-                
+
                 let mut state = StateHeadless::new();
-                
+
                 state.load_project(project_path.as_path()).unwrap();
                 state.rack.block_size = 16384;
 
@@ -59,7 +58,9 @@ pub fn cli(args: Vec<String>) -> anyhow::Result<()> {
                     let img_path = image_path.as_ref().unwrap();
                     let export_path = image_export_path.join(img_path.file_name());
                     //println!("Processing: {}", img_path.path().display());
-                    state.load_image(img_path.path()).unwrap_or_else(|op| println!("Unable to load image: {}", op));
+                    state
+                        .load_image(img_path.path())
+                        .unwrap_or_else(|op| println!("Unable to load image: {}", op));
                     state.rack.start_process();
 
                     pb.set_message(format!("{}", img_path.path().display()));
@@ -70,8 +71,13 @@ pub fn cli(args: Vec<String>) -> anyhow::Result<()> {
                         state.rack.process_next();
                     }
 
-                    state.rack.save_image(export_path.as_path()).unwrap_or_else(|op| println!("Unable to save image: {}", op));
-                    m_clone.println(format!("Saved: {}", export_path.display())).unwrap();
+                    state
+                        .rack
+                        .save_image(export_path.as_path())
+                        .unwrap_or_else(|op| println!("Unable to save image: {}", op));
+                    m_clone
+                        .println(format!("Saved: {}", export_path.display()))
+                        .unwrap();
                 }
             }))
         }

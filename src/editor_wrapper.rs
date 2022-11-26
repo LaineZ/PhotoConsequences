@@ -1,12 +1,11 @@
+use crate::renderer;
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use vst::editor::Editor;
 use winit::{
     dpi::LogicalSize,
     event_loop::EventLoopWindowTarget,
     window::{Window, WindowId},
 };
-use crate::renderer;
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-
 
 #[derive(Default)]
 pub struct EditorWrapper {

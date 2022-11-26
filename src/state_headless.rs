@@ -1,5 +1,5 @@
-use std::io::Read;
 use crate::plugin_rack::PluginRack;
+use std::io::Read;
 
 pub struct StateHeadless {
     pub rack: PluginRack,
@@ -19,7 +19,8 @@ impl StateHeadless {
 
         let mut proj_file_string = String::new();
         proj_file.read_to_string(&mut proj_file_string)?;
-        let instacnes: Vec<crate::plugin_rack::PluginRackInstance> = serde_json::from_str(&proj_file_string)?;
+        let instacnes: Vec<crate::plugin_rack::PluginRackInstance> =
+            serde_json::from_str(&proj_file_string)?;
 
         self.rack = PluginRack::new();
 
@@ -33,6 +34,5 @@ impl StateHeadless {
         Ok(())
     }
 
-    pub fn process(&mut self) {
-    }
+    pub fn process(&mut self) {}
 }

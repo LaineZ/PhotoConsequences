@@ -4,16 +4,16 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use image::io::Reader as ImageReader;
 use palette::{FromColor, Hsva, RgbHue, Srgba};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use image::io::Reader as ImageReader;
 
 use crate::editor_wrapper::EditorWrapper;
 use anyhow::Result;
 
 use vst::{
-    host::{HostBuffer, Host, PluginInstance, PluginLoader},
+    host::{Host, HostBuffer, PluginInstance, PluginLoader},
     prelude::Plugin,
 };
 
@@ -410,7 +410,7 @@ impl PluginRack {
         if ((self.total as f32 * 1.2) as usize) < self.position {
             self.finished = true;
         } else {
-        self.position += self.block_size as usize;
+            self.position += self.block_size as usize;
             //println!("processing: {} {} {}", len, self.position, self.block_size);
         }
     }

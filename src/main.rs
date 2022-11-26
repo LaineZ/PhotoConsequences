@@ -1,16 +1,15 @@
 use interfaces::{cli, gui};
 
-pub mod plugin_rack;
-pub mod ui;
-pub mod renderer;
-pub mod msgboxwrapper;
-pub mod ui_enums;
 pub mod editor_wrapper;
-pub mod image_generators;
 pub mod egui_platform_winit;
-pub mod state_headless;
+pub mod image_generators;
 pub mod interfaces;
-
+pub mod msgboxwrapper;
+pub mod plugin_rack;
+pub mod renderer;
+pub mod state_headless;
+pub mod ui;
+pub mod ui_enums;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

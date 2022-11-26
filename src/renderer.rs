@@ -134,7 +134,11 @@ impl Renderer {
             texture_size,
         );
 
-        let view = self.texture_native.as_ref().unwrap().create_view(&wgpu::TextureViewDescriptor::default());
+        let view = self
+            .texture_native
+            .as_ref()
+            .unwrap()
+            .create_view(&wgpu::TextureViewDescriptor::default());
 
         self.render_pass.egui_texture_from_wgpu_texture(
             &self.device,

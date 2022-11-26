@@ -1,16 +1,19 @@
 use egui::{
     menu,
-    plot::{Corner, Legend, Plot, PlotImage, Text, PlotPoint},
-    vec2, Context, RichText, Color32, Align2,
+    plot::{Corner, Legend, Plot, PlotImage, PlotPoint, Text},
+    vec2, Align2, Color32, Context, RichText,
 };
-use egui_extras::{Size, TableBuilder, TableBody};
-use std::{path::PathBuf, io::Read, time::Instant};
+use egui_extras::{Size, TableBody, TableBuilder};
+use std::{io::Read, path::PathBuf, time::Instant};
 use vst::prelude::Plugin;
-use winit::{event_loop::EventLoopWindowTarget, window::WindowId, dpi::PhysicalSize};
+use winit::{dpi::PhysicalSize, event_loop::EventLoopWindowTarget, window::WindowId};
 
 use crate::{
-    plugin_rack::{PluginRack, InputChannelType},
-    renderer::{self, Renderer}, msgboxwrapper::messagebox, ui_enums::{ModalWindows, Action, DialogVariant}, image_generators,
+    image_generators,
+    msgboxwrapper::messagebox,
+    plugin_rack::{InputChannelType, PluginRack},
+    renderer::{self, Renderer},
+    ui_enums::{Action, DialogVariant, ModalWindows},
 };
 
 pub struct State {
@@ -26,7 +29,7 @@ impl State {
             rack: PluginRack::new(),
             modal: ModalWindows::None,
             save_path: None,
-            timer: Instant::now()
+            timer: Instant::now(),
         }
     }
 
@@ -61,10 +64,7 @@ impl State {
                 renderer.windows.push(editor);
             }
             Err(error) => {
-                messagebox(
-                    "Unable to open editor",
-                    &error.to_string(),
-                );
+                messagebox("Unable to open editor", &error.to_string());
             }
         }
     }
@@ -82,7 +82,8 @@ impl State {
 
         let mut proj_file_string = String::new();
         proj_file.read_to_string(&mut proj_file_string)?;
-        let instacnes: Vec<crate::plugin_rack::PluginRackInstance> = serde_json::from_str(&proj_file_string)?;
+        let instacnes: Vec<crate::plugin_rack::PluginRackInstance> =
+            serde_json::from_str(&proj_file_string)?;
 
         renderer.cleanup_image();
         renderer.windows.clear();
@@ -92,7 +93,7 @@ impl State {
         self.rack.load_uninitialzed_plugins()?;
 
         drop(proj_file);
-        
+
         let mut image_file = archive.by_name("image.png")?;
 
         let mut buf = Vec::new();
@@ -104,14 +105,16 @@ impl State {
 
     pub fn export_image(&self) {
         let files = rfd::FileDialog::new()
-        .set_title("Export image")
-        .add_filter(
-            "Images",
-            &[
-                "png", "jpg", "jpeg", "gif", "bmp", "ico", "tiff", "webp", "tga",
-            ],
-        )
-        .save_file();
+            .set_title("Export image")
+            .add_filter("JPEG Image", &["jpg", "jpeg"])
+            .add_filter("PNG Image", &["png"])
+            .add_filter("GIF Image", &["gif"])
+            .add_filter("BMP Image", &["bmp"])
+            .add_filter("ICO Image", &["ico"])
+            .add_filter("TIFF Image", &["tiff"])
+            .add_filter("WebP Image", &["webp"])
+            .add_filter("TGA Image", &["tga"])
+            .save_file();
 
         if let Some(file) = files {
             self.rack.save_image(file).unwrap_or_else(|op| {
@@ -136,7 +139,10 @@ impl State {
             if name.instance.is_none() {
                 body.row(20.0, |mut row| {
                     row.col(|ui| {
-                        ui.label(format!("{}", name.get_path().display())).on_hover_text("This plugin is not initialized\nEffect configuration is preserved");
+                        ui.label(format!("{}", name.get_path().display()))
+                            .on_hover_text(
+                                "This plugin is not initialized\nEffect configuration is preserved",
+                            );
                     });
                     row.col(|ui| {
                         if ui.button("❎").on_hover_text("Remove").clicked() {
@@ -233,71 +239,76 @@ impl State {
     }
 
     fn exit_window(&mut self, context: &Context) -> DialogVariant {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return DialogVariant::No }
+        if self.rack.images.is_empty() && self.rack.plugins.is_empty() {
+            return DialogVariant::No;
+        }
         let mut res = DialogVariant::None;
         egui::Window::new("Project management")
-        .collapsible(false)
-        .auto_sized()
-        .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
-        .show(context, |ui| {
-            if self.save_path.is_some() {
-                ui.label(format!("Save {} before exiting?", self.save_path.as_ref().unwrap().display()));
-            } else {
-                ui.label("Save project before exiting?");
-            }
+            .collapsible(false)
+            .auto_sized()
+            .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+            .show(context, |ui| {
+                if self.save_path.is_some() {
+                    ui.label(format!(
+                        "Save {} before exiting?",
+                        self.save_path.as_ref().unwrap().display()
+                    ));
+                } else {
+                    ui.label("Save project before exiting?");
+                }
 
-            ui.horizontal(|ui| {
-                if ui.button("✅ Yes").clicked() {
-                    res = DialogVariant::Yes;
-                }
-                if ui.button("❎ No").clicked() {
-                    res = DialogVariant::No;
-                }
-                if ui.button("🚫 Cancel").clicked() {
-                    self.modal = ModalWindows::None;
-                    res = DialogVariant::Cancel;
-                }
+                ui.horizontal(|ui| {
+                    if ui.button("✅ Yes").clicked() {
+                        res = DialogVariant::Yes;
+                    }
+                    if ui.button("❎ No").clicked() {
+                        res = DialogVariant::No;
+                    }
+                    if ui.button("🚫 Cancel").clicked() {
+                        self.modal = ModalWindows::None;
+                        res = DialogVariant::Cancel;
+                    }
+                });
             });
-         });
 
         res
     }
 
-
     fn about_window(&mut self, context: &Context) {
         egui::Window::new("About")
-        .collapsible(false)
-        .auto_sized()
-        .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
-        .show(context, |ui| {
-            let text = RichText::new("PhotoConsequences").heading();
-            ui.label(text);
-            ui.label(format!("Version: {}", crate::VERSION));
-            ui.label("Tool to apply VST™ effects on the images");
-            ui.label("VST™ is a trademark of Steinberg Media Technologies GmbH.");
+            .collapsible(false)
+            .auto_sized()
+            .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+            .show(context, |ui| {
+                let text = RichText::new("PhotoConsequences").heading();
+                ui.label(text);
+                ui.label(format!("Version: {}", crate::VERSION));
+                ui.label("Tool to apply VST™ effects on the images");
+                ui.label("VST™ is a trademark of Steinberg Media Technologies GmbH.");
 
-            if ui.button("Ok").clicked() {
-                self.modal = ModalWindows::None;
-            }
-        });
+                if ui.button("Ok").clicked() {
+                    self.modal = ModalWindows::None;
+                }
+            });
     }
 
     fn save_project_as_ui(&mut self) {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return; }
+        if self.rack.images.is_empty() && self.rack.plugins.is_empty() {
+            return;
+        }
 
         let files = rfd::FileDialog::new()
-        .set_title("Save project")
-        .add_filter(
-            "PhotoCosnequences project file (*.viproj)",
-            &["viproj"],
-        )
-        .save_file();
+            .set_title("Save project")
+            .add_filter("PhotoCosnequences project file (*.viproj)", &["viproj"])
+            .save_file();
         self.save_path = files;
         self.save_project_ui();
     }
 
     fn save_project_ui(&mut self) {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() { return; }
+        if self.rack.images.is_empty() && self.rack.plugins.is_empty() {
+            return;
+        }
         if self.save_path.is_some() {
             let mut save_path = self.save_path.clone().unwrap();
             println!("{}", save_path.display());
@@ -305,11 +316,8 @@ impl State {
                 save_path.set_extension("viproj");
             }
 
-            self.rack.save_project(save_path).unwrap_or_else(|error| { 
-                messagebox(
-                    "Unable to load project",
-                    &error.to_string(),
-                );
+            self.rack.save_project(save_path).unwrap_or_else(|error| {
+                messagebox("Unable to load project", &error.to_string());
             });
         } else {
             self.save_project_as_ui();
@@ -338,39 +346,39 @@ impl State {
         event_loop: &EventLoopWindowTarget<renderer::Event>,
     ) {
         match self.modal {
-            ModalWindows::Exit => {
-                match self.exit_window(context) {
-                    DialogVariant::Yes => {
-                        self.save_project_ui();
-                        self.exit(renderer);
-                    }
-                    DialogVariant::No => {
-                        self.exit(renderer);
-                    },
-                    _ => {}
+            ModalWindows::Exit => match self.exit_window(context) {
+                DialogVariant::Yes => {
+                    self.save_project_ui();
+                    self.exit(renderer);
                 }
+                DialogVariant::No => {
+                    self.exit(renderer);
+                }
+                _ => {}
             },
-            ModalWindows::ExitNew => {
-                match self.exit_window(context) {
-                    DialogVariant::Yes => {
-                        self.save_project_ui();
-                        self.init(renderer);
-                        self.modal = ModalWindows::None;
-                    }
-                    DialogVariant::No => {
-                        self.init(renderer);
-                        self.modal = ModalWindows::None;
-                    },
-                    _ => {}
+            ModalWindows::ExitNew => match self.exit_window(context) {
+                DialogVariant::Yes => {
+                    self.save_project_ui();
+                    self.init(renderer);
+                    self.modal = ModalWindows::None;
                 }
-            }
+                DialogVariant::No => {
+                    self.init(renderer);
+                    self.modal = ModalWindows::None;
+                }
+                _ => {}
+            },
             ModalWindows::About => {
                 self.about_window(context);
             }
             _ => {}
         }
         egui::TopBottomPanel::bottom("statusbar").show(context, |ui| {
-            ui.label(format!("Memory used: {} MiB Processed: {}%", self.rack.calculate_memory_size() / 1024 / 1024, self.rack.compute_complete_percentage()));
+            ui.label(format!(
+                "Memory used: {} MiB Processed: {}%",
+                self.rack.calculate_memory_size() / 1024 / 1024,
+                self.rack.compute_complete_percentage()
+            ));
         });
         egui::SidePanel::left("left_panel").show(context, |ui| {
             menu::bar(ui, |ui| {
@@ -380,36 +388,35 @@ impl State {
                     }
                     if ui.button("📂 Open project").clicked() {
                         let files = rfd::FileDialog::new()
-                        .set_title("Open project")
-                        .add_filter(
-                            "PhotoCosnequences project file (*.viproj)",
-                            &["viproj"],
-                        )
-                        .pick_file();
+                            .set_title("Open project")
+                            .add_filter("PhotoCosnequences project file (*.viproj)", &["viproj"])
+                            .pick_file();
 
                         if let Some(file) = files {
-                            self.load_project(renderer, file).unwrap_or_else(|error| { 
-                                messagebox(
-                                    "Unable to load project",
-                                    &error.to_string(),
-                                );
+                            self.load_project(renderer, file).unwrap_or_else(|error| {
+                                messagebox("Unable to load project", &error.to_string());
                             });
                         }
                     }
                     ui.separator();
-                    ui.add_enabled_ui(!self.rack.images.is_empty() && !self.rack.plugins.is_empty() && self.rack.is_finished(), |ui| {
-                        if ui.button("💾 Save").clicked() {
-                            self.save_project_ui();
-                        }
+                    ui.add_enabled_ui(
+                        !self.rack.images.is_empty()
+                            && !self.rack.plugins.is_empty()
+                            && self.rack.is_finished(),
+                        |ui| {
+                            if ui.button("💾 Save").clicked() {
+                                self.save_project_ui();
+                            }
 
-                        if ui.button("💾 Save as").clicked() {
-                            self.save_project_as_ui();
-                        }
-                        ui.separator();
-                        if ui.button("🖼 Export image").clicked() {
-                            self.export_image();
-                        }
-                    });
+                            if ui.button("💾 Save as").clicked() {
+                                self.save_project_as_ui();
+                            }
+                            ui.separator();
+                            if ui.button("🖼 Export image").clicked() {
+                                self.export_image();
+                            }
+                        },
+                    );
                     if ui.button("❎ Exit").clicked() {
                         self.modal = ModalWindows::Exit;
                     }
@@ -452,50 +459,51 @@ impl State {
                             }
                             Action::ChangeInputChannel(id, channel) => {
                                 self.rack.plugins[id].input_channel = channel;
-                            },
+                            }
                             Action::ChangeWet(id, wet) => {
                                 self.rack.plugins[id].wet = wet;
                             }
                             Action::ChangeOutputChannel(id, value) => {
                                 self.rack.plugins[id].output_channel = value;
-                            },
+                            }
                             Action::ChangeSampleRate(id, value) => {
                                 self.rack.plugins[id].sample_rate = value;
-                            },
+                            }
                         }
                     }
                 });
 
-                ui.with_layout(egui::Layout::from_main_dir_and_cross_align(
+            ui.with_layout(
+                egui::Layout::from_main_dir_and_cross_align(
                     egui::Direction::TopDown,
-                    egui::Align::Center), |ui| { 
+                    egui::Align::Center,
+                ),
+                |ui| {
                     if ui
                         .add_sized([140.0, 1.0], egui::Button::new("➕ Add VST Effect"))
                         .clicked()
                     {
                         let mut extensions = ["so"];
-                        
+
                         if cfg!(target_os = "windows") {
                             extensions = ["dll"];
                         }
                         if cfg!(target_os = "macos") {
                             extensions = ["vst"];
                         }
-    
+
                         let file = rfd::FileDialog::new()
                             .add_filter("VST 2.4 Plugin", &extensions)
                             .pick_file();
-    
+
                         if let Some(file) = file {
                             self.rack.load_plugin(file).unwrap_or_else(|op| {
-                                messagebox(
-                                    "Plugin loading failed!",
-                                    &op.to_string(),
-                                );
+                                messagebox("Plugin loading failed!", &op.to_string());
                             });
                         }
                     }
-                });
+                },
+            );
         });
 
         egui::CentralPanel::default().show(context, |ui| {
@@ -529,12 +537,15 @@ impl State {
                     }
                 });
 
-                ui.add_enabled_ui(self.rack.images.len() > 1 && self.rack.is_finished(), |ui| {
-                    if ui.button("↻ Undo").clicked() {
-                        renderer.cleanup_image();
-                        self.rack.undo();
-                    }
-                });
+                ui.add_enabled_ui(
+                    self.rack.images.len() > 1 && self.rack.is_finished(),
+                    |ui| {
+                        if ui.button("↻ Undo").clicked() {
+                            renderer.cleanup_image();
+                            self.rack.undo();
+                        }
+                    },
+                );
             });
 
             let plot = Plot::new("items_demo")
@@ -547,11 +558,8 @@ impl State {
             if let Some(texture) = &renderer.texture {
                 let w = self.rack.images.last().unwrap().width() as f32;
                 let h = self.rack.images.last().unwrap().height() as f32;
-                let image = PlotImage::new(
-                    *texture,
-                    PlotPoint::new(0.0, 0.0),
-                    vec2(1.0 / h, 1.0 / w),
-                );
+                let image =
+                    PlotImage::new(*texture, PlotPoint::new(0.0, 0.0), vec2(1.0 / h, 1.0 / w));
 
                 plot.show(ui, |plot_ui| {
                     plot_ui.image(image);
@@ -563,15 +571,13 @@ impl State {
                         text = RichText::new("Welcome to PhotoConsequences!").heading();
                     }
 
-                    plot_ui.text(Text::new(
-                        PlotPoint::new(0.0, 0.0),
-                        text,
-                    ));
+                    plot_ui.text(Text::new(PlotPoint::new(0.0, 0.0), text));
                 });
 
                 if !self.rack.images.is_empty() {
                     renderer.destroy_texture();
-                    renderer.texture = Some(renderer.upload_texture(self.rack.images.last().unwrap()));
+                    renderer.texture =
+                        Some(renderer.upload_texture(self.rack.images.last().unwrap()));
                 }
             }
         });

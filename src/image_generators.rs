@@ -11,6 +11,6 @@ pub fn generate_noise() -> RgbaImage {
         pixel.0[2] = rng.gen_range(0..255);
         pixel.0[3] = 255;
     }
-    
+
     image
 }
