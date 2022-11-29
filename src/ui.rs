@@ -1,10 +1,10 @@
 use egui::{
     menu,
     plot::{Corner, Legend, Plot, PlotImage, PlotPoint, Text},
-    vec2, Align2, Color32, Context, RichText,
+    vec2, Align2, Color32, Context, Response, RichText,
 };
 use egui_extras::{Size, TableBody, TableBuilder};
-use std::{io::Read, path::PathBuf, time::Instant};
+use std::{io::Read, ops::Neg, path::PathBuf, time::Instant};
 use vst::prelude::Plugin;
 use winit::{dpi::PhysicalSize, event_loop::EventLoopWindowTarget, window::WindowId};
 
@@ -13,7 +13,7 @@ use crate::{
     msgboxwrapper::messagebox,
     plugin_rack::{InputChannelType, PluginRack},
     renderer::{self, Renderer},
-    ui_enums::{Action, DialogVariant, ModalWindows},
+    models::ui_enums::{Action, DialogVariant, ModalWindows},
 };
 
 pub struct State {
@@ -164,7 +164,7 @@ impl State {
                     ui.label("Image input channel processing:");
                     ui.separator();
                     let mut radio = name.input_channel;
-                                    
+
                     if ui.selectable_value(&mut radio, InputChannelType::Hue, "H").clicked() {
                         action = Some(Action::ChangeInputChannel(idx, radio))
                     };
@@ -172,6 +172,18 @@ impl State {
                         action = Some(Action::ChangeInputChannel(idx, radio))
                     };
                     if ui.selectable_value(&mut radio, InputChannelType::Value, "V").clicked() {
+                        action = Some(Action::ChangeInputChannel(idx, radio))
+                    };
+                    if ui.selectable_value(&mut radio, InputChannelType::Red, "Red").clicked() {
+                        action = Some(Action::ChangeInputChannel(idx, radio))
+                    };
+                    if ui.selectable_value(&mut radio, InputChannelType::Green, "Green").clicked() {
+                        action = Some(Action::ChangeInputChannel(idx, radio))
+                    };
+                    if ui.selectable_value(&mut radio, InputChannelType::Blue, "Blue").clicked() {
+                        action = Some(Action::ChangeInputChannel(idx, radio))
+                    };
+                    if ui.selectable_value(&mut radio, InputChannelType::Alpha, "Alpha").clicked() {
                         action = Some(Action::ChangeInputChannel(idx, radio))
                     };
 
@@ -328,12 +340,33 @@ impl State {
         self.rack.start_process();
     }
 
+    fn mouse_movement(&mut self, position: PlotPoint, response: Response, renderer: &mut Renderer) {
+        if response.dragged() {
+            // println!("x: {} y: {}", (position.x as f64), (position.y as f64));
+
+            // let xpos = position.x as i32;
+            // let ypos = position.y as i32;
+
+            // for x in -3..3 {
+            //     for y in -3..3 {
+            //         let last_image = self.rack.images.last_mut().unwrap();
+            //         let pixel = last_image.get_pixel_mut((xpos + x) as u32, (ypos + y) as u32);
+            //         pixel.0[0] = 255;
+            //         pixel.0[1] = 255;
+            //         pixel.0[2] = 255;
+            //     }
+            // }
+
+            // crate::image_utils::split_image(self.rack.images.last_mut().unwrap(), 3, 3);
+        }
+    }
+
     pub fn update(&mut self, renderer: &mut Renderer) {
         self.rack.process_next();
         self.resize_editors(renderer);
         //println!("{:#?}", renderer.windows);
 
-        if !self.rack.is_finished() && self.timer.elapsed().as_millis() > 100 {
+        if !self.rack.is_finished() && self.timer.elapsed().as_millis() > 33 {
             renderer.texture = None;
             self.timer = Instant::now();
         }
@@ -550,28 +583,41 @@ impl State {
 
             let plot = Plot::new("items_demo")
                 .legend(Legend::default().position(Corner::RightBottom))
-                .show_x(false)
-                .show_y(false)
+                .show_x(true)
+                .show_y(true)
                 .show_background(false)
-                .show_axes([false; 2])
+                .show_axes([true; 2])
+                .allow_drag(false)
                 .data_aspect(1.0);
+
             if let Some(texture) = &renderer.texture {
                 let w = self.rack.images.last().unwrap().width() as f32;
                 let h = self.rack.images.last().unwrap().height() as f32;
-                let image =
-                    PlotImage::new(*texture, PlotPoint::new(0.0, 0.0), vec2(1.0 / h, 1.0 / w));
+                let image = PlotImage::new(*texture, PlotPoint::new(w / 2.0, h / -2.0), vec2(h, w));
 
-                plot.show(ui, |plot_ui| {
+                let mut mouse_position = None;
+                let response = plot.show(ui, |plot_ui| {
                     plot_ui.image(image);
+                    mouse_position = plot_ui.pointer_coordinate();
                 });
-            } else {
-                plot.show(ui, |plot_ui| {
-                    let mut text = RichText::new("Processing image, please wait...").heading();
-                    if self.rack.is_finished() {
-                        text = RichText::new("Welcome to PhotoConsequences!").heading();
-                    }
 
-                    plot_ui.text(Text::new(PlotPoint::new(0.0, 0.0), text));
+                if let Some(mut position) = mouse_position {
+                    position.y = position.y.neg();
+
+                    if position.x.is_sign_positive() && position.y.is_sign_positive() {
+                        self.mouse_movement(position, response.response, renderer);
+                    }
+                }
+            } else {
+                ui.add_enabled_ui(false, |ui| {
+                    plot.show(ui, |plot_ui| {
+                        let mut text = RichText::new("Processing image, please wait...").heading();
+                        if self.rack.is_finished() {
+                            text = RichText::new("Welcome to PhotoConsequences!").heading();
+                        }
+
+                        plot_ui.text(Text::new(PlotPoint::new(0.0, 0.0), text));
+                    });
                 });
 
                 if !self.rack.images.is_empty() {

@@ -33,6 +33,4 @@ impl StateHeadless {
         self.rack.load_image(file)?;
         Ok(())
     }
-
-    pub fn process(&mut self) {}
 }

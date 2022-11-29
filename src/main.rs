@@ -9,7 +9,8 @@ pub mod plugin_rack;
 pub mod renderer;
 pub mod state_headless;
 pub mod ui;
-pub mod ui_enums;
+pub mod models;
+pub mod image_utils;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

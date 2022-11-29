@@ -35,6 +35,10 @@ pub enum InputChannelType {
     Hue = 0,
     Saturation = 1,
     Value = 2,
+    Red = 3,
+    Green = 4,
+    Blue = 5,
+    Alpha = 6,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -324,21 +328,43 @@ impl PluginRack {
                     sample.0[2] as f32 / 255.0,
                     sample.0[3] as f32 / 255.0,
                 );
-                let hsv = Hsva::from_color(srgb);
                 match plugin.input_channel {
                     InputChannelType::Hue => {
+                        let hsv = Hsva::from_color(srgb);
                         for i in 0..input_count {
                             inputs[i].push(hsv.hue.to_positive_degrees() / 360.0);
                         }
                     }
                     InputChannelType::Saturation => {
+                        let hsv = Hsva::from_color(srgb);
                         for i in 0..input_count {
                             inputs[i].push(hsv.saturation);
                         }
                     }
                     InputChannelType::Value => {
+                        let hsv = Hsva::from_color(srgb);
                         for i in 0..input_count {
                             inputs[i].push(hsv.value);
+                        }
+                    }
+                    InputChannelType::Red => {
+                        for i in 0..input_count {
+                            inputs[i].push(srgb.red);
+                        }
+                    }
+                    InputChannelType::Green => {
+                        for i in 0..input_count {
+                            inputs[i].push(srgb.green);
+                        }
+                    }
+                    InputChannelType::Blue => {
+                        for i in 0..input_count {
+                            inputs[i].push(srgb.blue);
+                        }
+                    }
+                    InputChannelType::Alpha => {
+                        for i in 0..input_count {
+                            inputs[i].push(srgb.alpha);
                         }
                     }
                 }
@@ -374,26 +400,42 @@ impl PluginRack {
                 .take(self.block_size as usize)
                 .zip(&outputs[plugin.output_channel])
             {
-                let srgb = Srgba::new(
+                let mut srgb = Srgba::new(
                     pixel.0[0] as f32 / 255.0,
                     pixel.0[1] as f32 / 255.0,
                     pixel.0[2] as f32 / 255.0,
                     pixel.0[3] as f32 / 255.0,
                 );
-                let mut hsv = Hsva::from_color(srgb);
 
                 match plugin.input_channel {
                     InputChannelType::Hue => {
+                        let mut hsv = Hsva::from_color(srgb);
                         hsv.hue = RgbHue::from_degrees((*sample * 360.0) * plugin.wet);
+                        srgb = Srgba::from_color(hsv);
                     }
                     InputChannelType::Saturation => {
+                        let mut hsv = Hsva::from_color(srgb);
                         hsv.saturation = *sample * plugin.wet;
+                        srgb = Srgba::from_color(hsv);
                     }
                     InputChannelType::Value => {
+                        let mut hsv = Hsva::from_color(srgb);
                         hsv.value = *sample * plugin.wet;
+                        srgb = Srgba::from_color(hsv);
+                    }
+                    InputChannelType::Red => {
+                        srgb.red = *sample * plugin.wet;
+                    }
+                    InputChannelType::Green => {
+                        srgb.green = *sample * plugin.wet;
+                    }
+                    InputChannelType::Blue => {
+                        srgb.blue = *sample * plugin.wet;
+                    }
+                    InputChannelType::Alpha => {
+                        srgb.alpha = *sample * plugin.wet;
                     }
                 }
-                let srgb = Srgba::from_color(hsv);
 
                 pixel.0[0] = (srgb.red * 255.0) as u8;
                 pixel.0[1] = (srgb.green * 255.0) as u8;
