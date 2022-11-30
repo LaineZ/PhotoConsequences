@@ -7,7 +7,7 @@ pub fn messagebox(title: &str, message: &str) {
 pub fn messagebox(title: &str, message: &str) {
     extern crate msgbox;
     use msgbox::IconType;
-    
+
     msgbox::create(title, message, msgbox::IconType::Error).unwrap();
 }
 

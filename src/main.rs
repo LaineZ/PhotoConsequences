@@ -3,14 +3,14 @@ use interfaces::{cli, gui};
 pub mod editor_wrapper;
 pub mod egui_platform_winit;
 pub mod image_generators;
+pub mod image_utils;
 pub mod interfaces;
+pub mod models;
 pub mod msgboxwrapper;
 pub mod plugin_rack;
 pub mod renderer;
 pub mod state_headless;
 pub mod ui;
-pub mod models;
-pub mod image_utils;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

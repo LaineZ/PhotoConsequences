@@ -4,6 +4,40 @@ use image::RgbaImage;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration, Texture};
 use winit::window::Window;
 
+use crate::models::area::Area;
+
+pub struct RendererTexture {
+    id: Option<egui::TextureId>,
+    pub native: Option<Texture>,
+    pub location: Area,
+}
+
+impl RendererTexture {
+    pub fn new(id: Option<egui::TextureId>, native: Option<Texture>) -> Self {
+        Self {
+            id,
+            native,
+            location: Area::new(0, 0, 0, 0),
+        }
+    }
+
+    pub fn destroy_texture(&mut self) {
+        if self.native.is_some() && self.id == None {
+            self.native.as_ref().unwrap().destroy();
+            self.native = None;
+            println!("destroying texture")
+        }
+    }
+
+    pub fn cleanup_image(&mut self) {
+        self.id = None;
+    }
+
+    pub fn id(&self) -> Option<TextureId> {
+        self.id
+    }
+}
+
 pub enum Event {
     RequestRedraw,
 }
@@ -21,9 +55,7 @@ impl epi::backend::RepaintSignal for RepaintSignal {
 pub struct Renderer {
     /// Opened editor windows
     pub windows: Vec<Window>,
-    /// Image preview texture
-    pub texture: Option<egui::TextureId>,
-    pub texture_native: Option<Texture>,
+    pub textures: Vec<RendererTexture>,
     pub device: Device,
     pub queue: Queue,
     pub render_pass: RenderPass,
@@ -67,8 +99,7 @@ impl Renderer {
 
         Ok(Self {
             windows: Vec::new(),
-            texture: None,
-            texture_native: None,
+            textures: Vec::new(),
             device,
             queue,
             surface,
@@ -82,25 +113,27 @@ impl Renderer {
         std::process::exit(0)
     }
 
-    pub fn cleanup_image(&mut self) {
-        self.texture = None;
-    }
-
-    pub fn destroy_texture(&mut self) {
-        if self.texture_native.is_some() {
-            self.texture_native.as_ref().unwrap().destroy();
-            self.texture_native = None;
+    pub fn clear_render(&mut self) {
+        for txt in self.textures.iter_mut() {
+            txt.destroy_texture();
         }
+        self.textures.clear();
     }
 
-    pub fn upload_texture(&mut self, image: &RgbaImage) -> TextureId {
+    pub fn upload_texture(&mut self, image: &RgbaImage, idx: usize) {
+        //println!("uploading texture : {}x{}", image.width(), image.height());
+
+        if image.width() == 0 || image.height() == 0 {
+            return;
+        }
+
         let texture_size = wgpu::Extent3d {
             width: image.width(),
             height: image.height(),
             depth_or_array_layers: 1,
         };
 
-        self.texture_native = Some(self.device.create_texture(&wgpu::TextureDescriptor {
+        let texture_native = Some(self.device.create_texture(&wgpu::TextureDescriptor {
             // All textures are stored as 3D, we represent our 2D texture
             // by setting depth to 1.
             size: texture_size,
@@ -115,10 +148,22 @@ impl Renderer {
             label: Some("diffuse_texture"),
         }));
 
+        if idx < self.textures.len().saturating_sub(1) {
+            self.textures[idx] = RendererTexture::new(None, texture_native);
+        } else {
+            self.textures
+                .push(RendererTexture::new(None, texture_native));
+            println!("pushing");
+        }
+        self.textures[idx].location.width = image.width();
+        self.textures[idx].location.height = image.height();
+
+        //println!("{}x{}", self.textures[idx].location.width, self.textures[idx].location.height);
+
         self.queue.write_texture(
             // Tells wgpu where to copy the pixel data
             wgpu::ImageCopyTexture {
-                texture: self.texture_native.as_ref().unwrap(),
+                texture: self.textures[idx].native.as_ref().unwrap(),
                 mip_level: 0,
                 origin: wgpu::Origin3d::ZERO,
                 aspect: wgpu::TextureAspect::All,
@@ -134,16 +179,16 @@ impl Renderer {
             texture_size,
         );
 
-        let view = self
-            .texture_native
+        let view = self.textures[idx]
+            .native
             .as_ref()
             .unwrap()
             .create_view(&wgpu::TextureViewDescriptor::default());
 
-        self.render_pass.egui_texture_from_wgpu_texture(
+        self.textures[idx].id = Some(self.render_pass.egui_texture_from_wgpu_texture(
             &self.device,
             &view,
             wgpu::FilterMode::Nearest,
-        )
+        ));
     }
 }

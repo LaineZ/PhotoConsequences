@@ -9,7 +9,10 @@ use palette::{FromColor, Hsva, RgbHue, Srgba};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-use crate::editor_wrapper::EditorWrapper;
+use crate::{
+    editor_wrapper::EditorWrapper,
+    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W},
+};
 use anyhow::Result;
 
 use vst::{
@@ -22,9 +25,10 @@ pub struct PluginHost;
 pub struct PluginRack {
     pub host: Arc<Mutex<PluginHost>>,
     pub plugins: Vec<PluginRackInstance>,
-    pub block_size: i64,
-    pub images: Vec<image::RgbaImage>,
+    pub images: Vec<Vec<SplittedImage>>,
+    /// Current tile processing position
     position: usize,
+    /// Total processing tiles
     total: usize,
     finished: bool,
 }
@@ -127,7 +131,6 @@ impl PluginRack {
             host,
             plugins: Vec::new(),
             images: Vec::new(),
-            block_size: 8192,
             position: 0,
             total: 0,
             finished: true,
@@ -137,6 +140,9 @@ impl PluginRack {
     pub fn undo(&mut self) {
         if self.images.len() > 1 {
             self.images.remove(self.images.len() - 1);
+            for blocks in self.images.last_mut().unwrap() {
+                blocks.needs_update = true;
+            }
         }
     }
 
@@ -193,7 +199,13 @@ impl PluginRack {
     pub fn load_image<P: AsRef<std::path::Path>>(&mut self, file: P) -> anyhow::Result<()> {
         self.images.clear();
         let img = ImageReader::open(file)?.decode()?;
-        self.images.push(img.to_rgba8());
+
+        let w = img.width();
+        let h = img.height();
+
+        let mut split =
+            image_utils::split_image(&mut img.into_rgba8(), IMAGE_SPLIT_W, IMAGE_SPLIT_H);
+        self.images.push(split);
         Ok(())
     }
 
@@ -202,12 +214,17 @@ impl PluginRack {
         let img = ImageReader::new(Cursor::new(file))
             .with_guessed_format()?
             .decode()?;
-        self.images.push(img.to_rgba8());
+        self.images.push(image_utils::split_image(
+            &mut img.into_rgba8(),
+            IMAGE_SPLIT_W,
+            IMAGE_SPLIT_H,
+        ));
         Ok(())
     }
 
     pub fn save_image<P: AsRef<std::path::Path>>(&self, file: P) -> Result<(), image::ImageError> {
-        self.images.last().unwrap().save(file)
+        let img = image_utils::join_image(self.images.last().unwrap());
+        img.save(file)
     }
 
     pub fn save_project(&mut self, file: std::path::PathBuf) -> anyhow::Result<()> {
@@ -228,10 +245,9 @@ impl PluginRack {
 
         zip.start_file("image.png", options)?;
         let mut bytes: Vec<u8> = Vec::new();
-        self.images
-            .last()
-            .unwrap()
-            .write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+
+        let img = image_utils::join_image(self.images.last().unwrap());
+        img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
         zip.write_all(&bytes)?;
 
         zip.finish()?;
@@ -263,10 +279,10 @@ impl PluginRack {
             self.images.remove(1);
         }
 
-        self.images.push(img);
+        self.images.push(img.clone());
         self.finished = false;
         self.position = 0;
-        self.total = 0;
+        self.total = self.images.last().unwrap().len() - 1;
     }
 
     pub fn stop_process(&mut self) {
@@ -274,10 +290,6 @@ impl PluginRack {
         self.finished = true;
         self.position = 0;
         self.total = 0;
-    }
-
-    pub fn can_update_ui(&self) -> bool {
-        self.position % self.block_size as usize * 2 == 0
     }
 
     /// Lazy iterative processing of VST effects (should called in a loop)
@@ -293,6 +305,8 @@ impl PluginRack {
 
         //let full_process_time = std::time::Instant::now();
 
+        let last_image = self.images.last_mut().unwrap();
+
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
 
@@ -301,27 +315,20 @@ impl PluginRack {
             }
 
             let instance = instance.unwrap();
-            //let start = std::time::Instant::now();
+            let start = std::time::Instant::now();
             let input_count = instance.get_info().inputs as usize;
             let output_count = instance.get_info().outputs as usize;
 
             if plugin.bypass || input_count == 0 {
                 continue;
             }
-            //println!("i: {} o: {}", input_count, output_count);
+            println!("i: {} o: {}", input_count, output_count);
             // zeroing buffers
             let mut buf: HostBuffer<f32> = HostBuffer::new(input_count, output_count);
             let mut inputs: Vec<Vec<f32>> = vec![vec![0.0]; input_count];
             let mut outputs = vec![vec![0.0]; output_count];
 
-            for sample in self
-                .images
-                .last()
-                .unwrap()
-                .pixels()
-                .skip(self.position)
-                .take(self.block_size as usize)
-            {
+            for sample in last_image[self.position].data.pixels() {
                 let srgb = Srgba::new(
                     sample.0[0] as f32 / 255.0,
                     sample.0[1] as f32 / 255.0,
@@ -376,10 +383,10 @@ impl PluginRack {
 
             let mut audio_buffer = buf.bind(&inputs, &mut outputs);
 
-            //println!("Mapping took: {} ms", start.elapsed().as_millis());
+            println!("Mapping took: {} ms", start.elapsed().as_millis());
 
-            //let start = std::time::Instant::now();
-            //println!("processing");
+            let start = std::time::Instant::now();
+            println!("processing");
             instance.suspend();
             instance.set_sample_rate(plugin.sample_rate);
             instance.set_block_size(inputs[0].len() as i64);
@@ -389,15 +396,11 @@ impl PluginRack {
             instance.stop_process();
             instance.suspend();
 
-            //println!("VST Processing took: {} ms", start.elapsed().as_millis());
-            //let start = std::time::Instant::now();
-            for (pixel, sample) in self
-                .images
-                .last_mut()
-                .unwrap()
+            println!("VST Processing took: {} ms", start.elapsed().as_millis());
+            let start = std::time::Instant::now();
+            for (pixel, sample) in last_image[self.position]
+                .data
                 .pixels_mut()
-                .skip(self.position)
-                .take(self.block_size as usize)
                 .zip(&outputs[plugin.output_channel])
             {
                 let mut srgb = Srgba::new(
@@ -442,18 +445,18 @@ impl PluginRack {
                 pixel.0[2] = (srgb.blue * 255.0) as u8;
                 pixel.0[3] = (srgb.alpha * 255.0) as u8;
             }
-            //println!("Image return took: {} ms", start.elapsed().as_millis());
+            println!("Image return took: {} ms", start.elapsed().as_millis());
         }
 
-        if self.total == 0 {
-            self.total = self.images.last().unwrap().pixels().len();
-        }
+        last_image[self.position].needs_update = true;
 
-        if ((self.total as f32 * 1.2) as usize) < self.position {
+        if self.total <= self.position {
             self.finished = true;
+            println!("finished")
         } else {
-            self.position += self.block_size as usize;
-            //println!("processing: {} {} {}", len, self.position, self.block_size);
+            self.position += 1;
         }
+
+        println!("{}/{}", self.position, self.total);
     }
 }

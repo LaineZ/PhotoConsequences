@@ -4,16 +4,16 @@ use egui::{
     vec2, Align2, Color32, Context, Response, RichText,
 };
 use egui_extras::{Size, TableBody, TableBuilder};
-use std::{io::Read, ops::Neg, path::PathBuf, time::Instant};
+use std::{io::Read, path::PathBuf, time::Instant};
 use vst::prelude::Plugin;
 use winit::{dpi::PhysicalSize, event_loop::EventLoopWindowTarget, window::WindowId};
 
 use crate::{
     image_generators,
+    models::ui_enums::{Action, DialogVariant, ModalWindows},
     msgboxwrapper::messagebox,
     plugin_rack::{InputChannelType, PluginRack},
     renderer::{self, Renderer},
-    models::ui_enums::{Action, DialogVariant, ModalWindows},
 };
 
 pub struct State {
@@ -34,7 +34,7 @@ impl State {
     }
 
     pub fn load_image(&mut self, renderer: &mut Renderer, file: PathBuf) -> anyhow::Result<()> {
-        renderer.cleanup_image();
+        renderer.clear_render();
         self.rack.load_image(file)?;
         Ok(())
     }
@@ -85,7 +85,7 @@ impl State {
         let instacnes: Vec<crate::plugin_rack::PluginRackInstance> =
             serde_json::from_str(&proj_file_string)?;
 
-        renderer.cleanup_image();
+        renderer.clear_render();
         renderer.windows.clear();
         self.rack = PluginRack::new();
 
@@ -243,9 +243,8 @@ impl State {
     }
 
     fn init(&mut self, renderer: &mut Renderer) {
-        renderer.cleanup_image();
+        renderer.clear_render();
         renderer.windows.clear();
-        renderer.destroy_texture();
         self.rack = PluginRack::new();
         self.save_path = None;
     }
@@ -366,8 +365,22 @@ impl State {
         self.resize_editors(renderer);
         //println!("{:#?}", renderer.windows);
 
-        if !self.rack.is_finished() && self.timer.elapsed().as_millis() > 33 {
-            renderer.texture = None;
+        if self.timer.elapsed().as_millis() > 100 {
+            if !self.rack.images.is_empty() {
+                let img = self.rack.images.last_mut().unwrap();
+                for (i, img) in img.iter_mut().enumerate() {
+                    if img.needs_update {
+                        if let Some(idx) = renderer.textures.get_mut(i) {
+                            idx.cleanup_image();
+                        }
+                        renderer.upload_texture(&img.data, i);
+                        renderer.textures[i].location.x = img.location().x;
+                        renderer.textures[i].location.y = img.location().y;
+                        img.needs_update = false;
+                        println!("{}: updated", i);
+                    }
+                }
+            }
             self.timer = Instant::now();
         }
     }
@@ -455,13 +468,13 @@ impl State {
                     }
                 });
 
-                ui.menu_button("Tools", |ui| {
-                    if ui.button("⧯ Generate noise image").clicked() {
-                        renderer.cleanup_image();
-                        self.rack.images.clear();
-                        self.rack.images.push(image_generators::generate_noise());
-                    }
-                });
+                // ui.menu_button("Tools", |ui| {
+                //     if ui.button("⧯ Generate noise image").clicked() {
+                //         renderer.cleanup_image();
+                //         self.rack.images.clear();
+                //         self.rack.images.push(image_generators::generate_noise());
+                //     }
+                // });
 
                 ui.menu_button("About", |ui| {
                     if ui.button("ℹ About").clicked() {
@@ -564,7 +577,6 @@ impl State {
                         }
                     } else {
                         if ui.button("☠ Cancel").clicked() {
-                            renderer.cleanup_image();
                             self.rack.stop_process();
                         }
                     }
@@ -574,39 +586,43 @@ impl State {
                     self.rack.images.len() > 1 && self.rack.is_finished(),
                     |ui| {
                         if ui.button("↻ Undo").clicked() {
-                            renderer.cleanup_image();
                             self.rack.undo();
                         }
                     },
                 );
             });
 
-            let plot = Plot::new("items_demo")
+            let plot = Plot::new("photo_preview")
                 .legend(Legend::default().position(Corner::RightBottom))
                 .show_x(true)
                 .show_y(true)
                 .show_background(false)
                 .show_axes([true; 2])
-                .allow_drag(false)
+                .allow_drag(true)
                 .data_aspect(1.0);
 
-            if let Some(texture) = &renderer.texture {
-                let w = self.rack.images.last().unwrap().width() as f32;
-                let h = self.rack.images.last().unwrap().height() as f32;
-                let image = PlotImage::new(*texture, PlotPoint::new(w / 2.0, h / -2.0), vec2(h, w));
-
-                let mut mouse_position = None;
+            if !renderer.textures.is_empty() {
                 let response = plot.show(ui, |plot_ui| {
-                    plot_ui.image(image);
-                    mouse_position = plot_ui.pointer_coordinate();
-                });
-
-                if let Some(mut position) = mouse_position {
-                    position.y = position.y.neg();
-
-                    if position.x.is_sign_positive() && position.y.is_sign_positive() {
-                        self.mouse_movement(position, response.response, renderer);
+                    for txt in renderer.textures.iter_mut() {
+                        if txt.native.is_none() {
+                            continue;
+                        }
+                        if let Some(id) = txt.id() {
+                            let image = PlotImage::new(
+                                id,
+                                PlotPoint::new(
+                                    (txt.location.width as f32 / 2.0) + txt.location.x as f32,
+                                    txt.location.height as f32 / -2.0 - txt.location.y as f32,
+                                ),
+                                vec2(txt.location.width as f32, txt.location.height as f32),
+                            );
+                            plot_ui.image(image);
+                        }
                     }
+                });
+                // check for destroyed textures
+                for txt in renderer.textures.iter_mut() {
+                    txt.destroy_texture();
                 }
             } else {
                 ui.add_enabled_ui(false, |ui| {
@@ -619,12 +635,6 @@ impl State {
                         plot_ui.text(Text::new(PlotPoint::new(0.0, 0.0), text));
                     });
                 });
-
-                if !self.rack.images.is_empty() {
-                    renderer.destroy_texture();
-                    renderer.texture =
-                        Some(renderer.upload_texture(self.rack.images.last().unwrap()));
-                }
             }
         });
     }

@@ -52,7 +52,6 @@ pub fn cli(args: Vec<String>) -> anyhow::Result<()> {
                 let mut state = StateHeadless::new();
 
                 state.load_project(project_path.as_path()).unwrap();
-                state.rack.block_size = 16384;
 
                 for (idx, image_path) in my_chunk.iter().enumerate() {
                     let img_path = image_path.as_ref().unwrap();
