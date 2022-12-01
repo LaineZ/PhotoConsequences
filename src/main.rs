@@ -1,4 +1,5 @@
 use interfaces::{cli, gui};
+use log::info;
 
 pub mod editor_wrapper;
 pub mod egui_platform_winit;
@@ -15,16 +16,17 @@ pub mod ui;
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 fn main() {
+    env_logger::init();
     let args: Vec<String> = std::env::args().collect();
 
-    println!("PhotoConsequences by @140bpmdubstep");
-    println!("Version {}", VERSION);
+    info!("PhotoConsequences by @140bpmdubstep");
+    info!("Version {}", VERSION);
 
     if args.len() > 2 {
-        println!("Running in cli mode");
+        info!("Running in cli mode");
         cli::cli(args).expect("Error while running cli mode");
     } else {
-        println!("Running in gui mode");
+        info!("Running in gui mode");
         gui::gui(args);
     }
 }

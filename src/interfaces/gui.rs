@@ -5,6 +5,7 @@ use crate::ui::State;
 use crate::VERSION;
 use ::egui::FontDefinitions;
 use egui_wgpu_backend::ScreenDescriptor;
+use log::{debug, error};
 use std::io::Cursor;
 use std::iter;
 use std::path::PathBuf;
@@ -30,7 +31,7 @@ pub fn gui(args: Vec<String>) {
     if let Ok(icn) = Icon::from_rgba(img.to_rgba8().to_vec(), img.width(), img.height()) {
         icon = Some(icn);
     } else {
-        println!("Unable set icon!");
+        error!("Unable set icon!");
     }
 
     let window = winit::window::WindowBuilder::new()
@@ -97,7 +98,7 @@ pub fn gui(args: Vec<String>) {
                         return;
                     }
                     Err(e) => {
-                        eprintln!("Dropped frame with error: {}", e);
+                        error!("Dropped frame with error: {}", e);
                         return;
                     }
                 };
@@ -179,7 +180,7 @@ pub fn gui(args: Vec<String>) {
                     }
                 }
                 winit::event::WindowEvent::CloseRequested => {
-                    println!("id: {:?}", window_id);
+                    debug!("id: {:?}", window_id);
                     for _ in &renderer.windows {
                         state.close_editor(window_id);
                     }

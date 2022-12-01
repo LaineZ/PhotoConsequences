@@ -1,15 +1,15 @@
 use egui::{
     menu,
     plot::{Corner, Legend, Plot, PlotImage, PlotPoint, Text},
-    vec2, Align2, Color32, Context, Response, RichText,
+    vec2, Align2, Button, Color32, Context, Response, RichText,
 };
 use egui_extras::{Size, TableBody, TableBuilder};
+use log::{debug, trace};
 use std::{io::Read, path::PathBuf, time::Instant};
 use vst::prelude::Plugin;
 use winit::{dpi::PhysicalSize, event_loop::EventLoopWindowTarget, window::WindowId};
 
 use crate::{
-    image_generators,
     models::ui_enums::{Action, DialogVariant, ModalWindows},
     msgboxwrapper::messagebox,
     plugin_rack::{InputChannelType, PluginRack},
@@ -322,7 +322,7 @@ impl State {
         }
         if self.save_path.is_some() {
             let mut save_path = self.save_path.clone().unwrap();
-            println!("{}", save_path.display());
+            debug!("{}", save_path.display());
             if save_path.extension().is_none() {
                 save_path.set_extension("viproj");
             }
@@ -365,20 +365,18 @@ impl State {
         self.resize_editors(renderer);
         //println!("{:#?}", renderer.windows);
 
-        if self.timer.elapsed().as_millis() > 100 {
-            if !self.rack.images.is_empty() {
-                let img = self.rack.images.last_mut().unwrap();
-                for (i, img) in img.iter_mut().enumerate() {
-                    if img.needs_update {
-                        if let Some(idx) = renderer.textures.get_mut(i) {
-                            idx.cleanup_image();
-                        }
-                        renderer.upload_texture(&img.data, i);
-                        renderer.textures[i].location.x = img.location().x;
-                        renderer.textures[i].location.y = img.location().y;
-                        img.needs_update = false;
-                        println!("{}: updated", i);
+        if self.timer.elapsed().as_millis() > 33 && !self.rack.images.is_empty() {
+            let img = self.rack.images.last_mut().unwrap();
+            for (i, img) in img.iter_mut().enumerate() {
+                if img.needs_update {
+                    if let Some(idx) = renderer.textures.get_mut(i) {
+                        idx.cleanup_image();
                     }
+                    renderer.upload_texture(&img.data, i);
+                    renderer.textures[i].location.x = img.location().x;
+                    renderer.textures[i].location.y = img.location().y;
+                    img.needs_update = false;
+                    trace!("{}: updated", i);
                 }
             }
             self.timer = Instant::now();
@@ -421,8 +419,7 @@ impl State {
         }
         egui::TopBottomPanel::bottom("statusbar").show(context, |ui| {
             ui.label(format!(
-                "Memory used: {} MiB Processed: {}%",
-                self.rack.calculate_memory_size() / 1024 / 1024,
+                "Processed: {}%",
                 self.rack.compute_complete_percentage()
             ));
         });
@@ -554,7 +551,10 @@ impl State {
 
         egui::CentralPanel::default().show(context, |ui| {
             ui.horizontal(|ui| {
-                if ui.button("📂 Open image").clicked() {
+                if ui
+                    .add_enabled(self.rack.is_finished(), Button::new("📂 Open image"))
+                    .clicked()
+                {
                     let files = rfd::FileDialog::new()
                         .add_filter(
                             "Images",

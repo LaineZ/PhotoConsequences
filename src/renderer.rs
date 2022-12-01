@@ -1,6 +1,7 @@
 use egui::TextureId;
 use egui_wgpu_backend::RenderPass;
 use image::RgbaImage;
+use log::trace;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration, Texture};
 use winit::window::Window;
 
@@ -25,7 +26,7 @@ impl RendererTexture {
         if self.native.is_some() && self.id == None {
             self.native.as_ref().unwrap().destroy();
             self.native = None;
-            println!("destroying texture")
+            trace!("destroying texture")
         }
     }
 
@@ -121,7 +122,7 @@ impl Renderer {
     }
 
     pub fn upload_texture(&mut self, image: &RgbaImage, idx: usize) {
-        //println!("uploading texture : {}x{}", image.width(), image.height());
+        trace!("Uploading texture : {}x{}", image.width(), image.height());
 
         if image.width() == 0 || image.height() == 0 {
             return;
@@ -153,7 +154,6 @@ impl Renderer {
         } else {
             self.textures
                 .push(RendererTexture::new(None, texture_native));
-            println!("pushing");
         }
         self.textures[idx].location.width = image.width();
         self.textures[idx].location.height = image.height();

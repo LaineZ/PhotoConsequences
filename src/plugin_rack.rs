@@ -5,6 +5,7 @@ use std::{
 };
 
 use image::io::Reader as ImageReader;
+use log::{debug, info};
 use palette::{FromColor, Hsva, RgbHue, Srgba};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -91,7 +92,7 @@ impl PluginRackInstance {
             inst.init();
             self.editor = EditorWrapper::new(inst.get_editor());
             if !self.plugin_data.is_empty() {
-                println!("found a plugin data LOADING NOW!");
+                info!("Found a plugin data LOADING NOW!");
                 self.load_block()?;
             }
         }
@@ -116,11 +117,11 @@ impl PluginRackInstance {
 
 impl Host for PluginHost {
     fn automate(&self, index: i32, value: f32) {
-        println!("Parameter {} had its value changed to {}", index, value);
+        debug!("Parameter {} had its value changed to {}", index, value);
     }
 
     fn process_events(&self, events: &vst::api::Events) {
-        println!("Plugin called the {:?} event", events.events);
+        debug!("Plugin called the {:?} event", events.events);
     }
 }
 
@@ -137,12 +138,16 @@ impl PluginRack {
         }
     }
 
+    fn request_all_update(&mut self) {
+        for blocks in self.images.last_mut().unwrap() {
+            blocks.needs_update = true;
+        }
+    }
+
     pub fn undo(&mut self) {
         if self.images.len() > 1 {
             self.images.remove(self.images.len() - 1);
-            for blocks in self.images.last_mut().unwrap() {
-                blocks.needs_update = true;
-            }
+            self.request_all_update();
         }
     }
 
@@ -158,12 +163,6 @@ impl PluginRack {
         self.finished
     }
 
-    pub fn revert(&mut self) {
-        if self.images.len() > 1 {
-            self.images.drain(1..);
-        }
-    }
-
     pub fn load_plugin(&mut self, file: PathBuf) -> anyhow::Result<()> {
         let mut loader = PluginLoader::load(&file, Arc::clone(&self.host))?;
         let instance = loader.instance()?;
@@ -172,7 +171,7 @@ impl PluginRack {
     }
 
     pub fn compute_complete_percentage(&self) -> usize {
-        self.position.checked_div(self.total).unwrap_or(0) * 100
+        (self.position as f32 / self.total as f32 * 100.0) as usize
     }
 
     pub fn get_processed_position(&self) -> usize {
@@ -200,11 +199,7 @@ impl PluginRack {
         self.images.clear();
         let img = ImageReader::open(file)?.decode()?;
 
-        let w = img.width();
-        let h = img.height();
-
-        let mut split =
-            image_utils::split_image(&mut img.into_rgba8(), IMAGE_SPLIT_W, IMAGE_SPLIT_H);
+        let split = image_utils::split_image(&mut img.into_rgba8(), IMAGE_SPLIT_W, IMAGE_SPLIT_H);
         self.images.push(split);
         Ok(())
     }
@@ -214,11 +209,9 @@ impl PluginRack {
         let img = ImageReader::new(Cursor::new(file))
             .with_guessed_format()?
             .decode()?;
-        self.images.push(image_utils::split_image(
-            &mut img.into_rgba8(),
-            IMAGE_SPLIT_W,
-            IMAGE_SPLIT_H,
-        ));
+
+        self.images
+            .push(image_utils::split_image(&mut img.into_rgba8(), 256, 256));
         Ok(())
     }
 
@@ -260,7 +253,7 @@ impl PluginRack {
     }
 
     pub fn remove_plugin(&mut self, id: usize) {
-        println!("removing: {}", id);
+        debug!("Removing: {}", id);
         if let Some(instance) = self.plugins[id].instance.as_mut() {
             instance.suspend();
         }
@@ -275,7 +268,6 @@ impl PluginRack {
         let img = self.images.last().unwrap().clone();
 
         if self.images.len() >= 2 {
-            //println!("{}", img.len());
             self.images.remove(1);
         }
 
@@ -290,6 +282,7 @@ impl PluginRack {
         self.finished = true;
         self.position = 0;
         self.total = 0;
+        self.request_all_update();
     }
 
     /// Lazy iterative processing of VST effects (should called in a loop)
@@ -322,7 +315,7 @@ impl PluginRack {
             if plugin.bypass || input_count == 0 {
                 continue;
             }
-            println!("i: {} o: {}", input_count, output_count);
+            debug!("i: {} o: {}", input_count, output_count);
             // zeroing buffers
             let mut buf: HostBuffer<f32> = HostBuffer::new(input_count, output_count);
             let mut inputs: Vec<Vec<f32>> = vec![vec![0.0]; input_count];
@@ -383,10 +376,10 @@ impl PluginRack {
 
             let mut audio_buffer = buf.bind(&inputs, &mut outputs);
 
-            println!("Mapping took: {} ms", start.elapsed().as_millis());
+            debug!("Mapping took: {} ms", start.elapsed().as_millis());
 
             let start = std::time::Instant::now();
-            println!("processing");
+            debug!("processing");
             instance.suspend();
             instance.set_sample_rate(plugin.sample_rate);
             instance.set_block_size(inputs[0].len() as i64);
@@ -396,7 +389,7 @@ impl PluginRack {
             instance.stop_process();
             instance.suspend();
 
-            println!("VST Processing took: {} ms", start.elapsed().as_millis());
+            debug!("VST Processing took: {} ms", start.elapsed().as_millis());
             let start = std::time::Instant::now();
             for (pixel, sample) in last_image[self.position]
                 .data
@@ -445,18 +438,18 @@ impl PluginRack {
                 pixel.0[2] = (srgb.blue * 255.0) as u8;
                 pixel.0[3] = (srgb.alpha * 255.0) as u8;
             }
-            println!("Image return took: {} ms", start.elapsed().as_millis());
+            debug!("Image return took: {} ms", start.elapsed().as_millis());
         }
 
         last_image[self.position].needs_update = true;
 
         if self.total <= self.position {
             self.finished = true;
-            println!("finished")
+            debug!("finished")
         } else {
             self.position += 1;
         }
 
-        println!("{}/{}", self.position, self.total);
+        debug!("{}/{}", self.position, self.total);
     }
 }

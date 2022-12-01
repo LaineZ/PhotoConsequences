@@ -1,9 +1,10 @@
 use image::{imageops::crop, GenericImage, RgbaImage};
+use log::debug;
 
 use crate::models::area::Area;
 
-pub const IMAGE_SPLIT_W: u32 = 8;
-pub const IMAGE_SPLIT_H: u32 = 8;
+pub const IMAGE_SPLIT_W: usize = 128;
+pub const IMAGE_SPLIT_H: usize = 128;
 
 #[derive(Clone)]
 pub struct SplittedImage {
@@ -28,7 +29,7 @@ impl SplittedImage {
         let width = img.width();
         let height = img.height();
 
-        println!(
+        debug!(
             "Created image: x: {} y: {} w: {} h: {} actual: {}x{}",
             location.x, location.y, location.width, location.height, width, height
         );
@@ -50,30 +51,22 @@ impl SplittedImage {
     }
 }
 
-pub fn split_image(image: &mut RgbaImage, m: u32, n: u32) -> Vec<SplittedImage> {
-    let width = image.width() / m;
-    let height = image.height() / n;
-
-    let width_last_column = width + (image.width() % width);
-    let height_last_row = height + (image.height() % height);
+pub fn split_image(
+    image: &mut RgbaImage,
+    tile_width: usize,
+    tile_height: usize,
+) -> Vec<SplittedImage> {
+    let width = image.width();
+    let height = image.height();
 
     let mut result = Vec::new();
 
-    for i in 0..n {
-        for j in 0..m {
-            let w = if j == (m - 1) {
-                width_last_column
-            } else {
-                width
-            };
-
-            let h = if i == (m - 1) {
-                height_last_row
-            } else {
-                height
-            };
-
-            let split = SplittedImage::new(Area::new(i * w, j * h, w, h), image);
+    for x in (0..width).step_by(tile_width) {
+        for y in (0..height).step_by(tile_height) {
+            let split = SplittedImage::new(
+                Area::new(x, y, tile_width as u32, tile_height as u32),
+                image,
+            );
             result.push(split);
         }
     }
