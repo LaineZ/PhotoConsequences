@@ -275,16 +275,6 @@ impl PluginRack {
         self.finished = false;
         self.position = 0;
         self.total = self.images.last().unwrap().len() - 1;
-
-        for plugin in &mut self.plugins {
-            let instance = plugin.instance.as_mut();
-
-            if let Some(inst) = instance {
-                inst.suspend();
-                inst.set_sample_rate(plugin.sample_rate);
-                inst.set_block_size((IMAGE_SPLIT_W * IMAGE_SPLIT_H) as i64);
-            }
-        }
     }
 
     pub fn stop_process(&mut self) {
@@ -390,6 +380,9 @@ impl PluginRack {
 
             let start = std::time::Instant::now();
             debug!("processing");
+            instance.suspend();
+            instance.set_sample_rate(plugin.sample_rate);
+            instance.set_block_size(inputs[0].len() as i64);
             instance.resume();
             instance.start_process();
             instance.process(&mut audio_buffer);
@@ -451,13 +444,12 @@ impl PluginRack {
         if self.total <= self.position {
             self.finished = true;
             for plugin in &mut self.plugins {
-                let instance = plugin.instance.as_mut();
-    
-                if let Some(inst) = instance {
-                    inst.stop_process();
-                    inst.suspend();
+                if let Some(instance) = plugin.instance.as_mut() {
+                    instance.stop_process();
+                    instance.suspend();
                 }
             }
+            debug!("finished")
         } else {
             self.position += 1;
         }
