@@ -208,7 +208,7 @@ impl State {
                         action = Some(Action::ChangeWet(idx, wet / 100.0));
                     }
 
-                    let mut sample_rate = name.sample_rate;
+                    let mut sample_rate = name.get_sample_rate();
                     ui.label("Sample rate:");
                     ui.separator();
                     if ui.add(egui::Slider::new(&mut sample_rate, 1102.0..=768000.0).suffix("Hz")).changed() {
@@ -510,7 +510,7 @@ impl State {
                                 self.rack.plugins[id].output_channel = value;
                             }
                             Action::ChangeSampleRate(id, value) => {
-                                self.rack.plugins[id].sample_rate = value;
+                                self.rack.plugins[id].set_sample_rate(value);
                             }
                         }
                     }

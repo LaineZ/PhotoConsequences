@@ -12,7 +12,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     editor_wrapper::EditorWrapper,
-    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W},
+    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W}, processing::rgba_to_sample,
 };
 use anyhow::Result;
 
@@ -63,7 +63,7 @@ pub struct PluginRackInstance {
     #[serde(rename = "Wet")]
     pub wet: f32,
     #[serde(rename = "SampleRate")]
-    pub sample_rate: f32,
+    sample_rate: f32,
     #[serde(rename = "Bypass", default)]
     pub bypass: bool,
 }
@@ -112,6 +112,17 @@ impl PluginRackInstance {
                 .load_bank_data(&base64::decode(&self.plugin_data)?);
         }
         Ok(())
+    }
+
+    pub fn set_sample_rate(&mut self, rate: f32) {
+        if let Some(inst) = self.instance.as_mut() {
+            inst.suspend();
+            inst.set_sample_rate(rate);
+        }
+    }
+    
+    pub fn get_sample_rate(&self) -> f32 {
+        self.sample_rate
     }
 }
 
@@ -275,6 +286,20 @@ impl PluginRack {
         self.finished = false;
         self.position = 0;
         self.total = self.images.last().unwrap().len() - 1;
+
+        for plugin in &mut self.plugins {
+            let instance = plugin.instance.as_mut();
+
+            if instance.is_none() {
+                continue;
+            }
+
+            let instance = instance.unwrap();
+
+            instance.suspend();
+            instance.set_block_size(256 * 256);
+            instance.resume();
+        }
     }
 
     pub fn stop_process(&mut self) {
@@ -322,68 +347,21 @@ impl PluginRack {
             let mut outputs = vec![vec![0.0]; output_count];
 
             for sample in last_image[self.position].data.pixels() {
-                let srgb = Srgba::new(
-                    sample.0[0] as f32 / 255.0,
-                    sample.0[1] as f32 / 255.0,
-                    sample.0[2] as f32 / 255.0,
-                    sample.0[3] as f32 / 255.0,
-                );
-                match plugin.input_channel {
-                    InputChannelType::Hue => {
-                        let hsv = Hsva::from_color(srgb);
-                        for i in 0..input_count {
-                            inputs[i].push(hsv.hue.to_positive_degrees() / 360.0);
-                        }
-                    }
-                    InputChannelType::Saturation => {
-                        let hsv = Hsva::from_color(srgb);
-                        for i in 0..input_count {
-                            inputs[i].push(hsv.saturation);
-                        }
-                    }
-                    InputChannelType::Value => {
-                        let hsv = Hsva::from_color(srgb);
-                        for i in 0..input_count {
-                            inputs[i].push(hsv.value);
-                        }
-                    }
-                    InputChannelType::Red => {
-                        for i in 0..input_count {
-                            inputs[i].push(srgb.red);
-                        }
-                    }
-                    InputChannelType::Green => {
-                        for i in 0..input_count {
-                            inputs[i].push(srgb.green);
-                        }
-                    }
-                    InputChannelType::Blue => {
-                        for i in 0..input_count {
-                            inputs[i].push(srgb.blue);
-                        }
-                    }
-                    InputChannelType::Alpha => {
-                        for i in 0..input_count {
-                            inputs[i].push(srgb.alpha);
-                        }
-                    }
+                for i in 0..input_count {
+                    inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
                 }
-
+                
                 for i in 0..output_count {
                     outputs[i].push(0.0);
                 }
             }
-
+            
             let mut audio_buffer = buf.bind(&inputs, &mut outputs);
 
             debug!("Mapping took: {} ms", start.elapsed().as_millis());
 
             let start = std::time::Instant::now();
             debug!("processing");
-            instance.suspend();
-            instance.set_sample_rate(plugin.sample_rate);
-            instance.set_block_size(inputs[0].len() as i64);
-            instance.resume();
             instance.start_process();
             instance.process(&mut audio_buffer);
 

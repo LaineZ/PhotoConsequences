@@ -61,8 +61,8 @@ pub fn split_image(
 
     let mut result = Vec::new();
 
-    for x in (0..width).step_by(tile_width) {
-        for y in (0..height).step_by(tile_height) {
+    for y in (0..height).step_by(tile_width) {
+        for x in (0..width).step_by(tile_height) {
             let split = SplittedImage::new(
                 Area::new(x, y, tile_width as u32, tile_height as u32),
                 image,
