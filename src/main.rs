@@ -9,10 +9,10 @@ pub mod interfaces;
 pub mod models;
 pub mod msgboxwrapper;
 pub mod plugin_rack;
+pub mod processing;
 pub mod renderer;
 pub mod state_headless;
 pub mod ui;
-pub mod processing;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

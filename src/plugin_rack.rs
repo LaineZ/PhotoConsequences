@@ -4,15 +4,16 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use image::io::Reader as ImageReader;
+use image::{imageops::{replace, crop_imm}, io::Reader as ImageReader, RgbaImage};
 use log::{debug, info};
-use palette::{FromColor, Hsva, RgbHue, Srgba};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     editor_wrapper::EditorWrapper,
-    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W}, processing::rgba_to_sample,
+    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W},
+    models::area::Area,
+    processing::{rgba_to_sample, sample_to_rgba},
 };
 use anyhow::Result;
 
@@ -120,7 +121,7 @@ impl PluginRackInstance {
             inst.set_sample_rate(rate);
         }
     }
-    
+
     pub fn get_sample_rate(&self) -> f32 {
         self.sample_rate
     }
@@ -226,9 +227,29 @@ impl PluginRack {
         Ok(())
     }
 
+    pub fn load_image_rgba(&mut self, image: &mut RgbaImage) {
+        self.images.clear();
+        self.images.push(image_utils::split_image(image, 256, 256));
+    }
+
     pub fn save_image<P: AsRef<std::path::Path>>(&self, file: P) -> Result<(), image::ImageError> {
         let img = image_utils::join_image(self.images.last().unwrap());
         img.save(file)
+    }
+
+    pub fn change_pixel(&mut self, x: u32, y: u32, pixel: image::Rgba<u8>) {
+        let x_f = x % 256;
+        let y_f = y % 256;
+
+        for tile in self.images.last_mut().unwrap() {
+            let loc = Area::new(x, y, 1, 1);
+            if loc.check_position(tile.location()) {
+                //debug!("{}x{}  x{} y{}", x_f, y_f, x, y);
+                tile.data.put_pixel(x_f, y_f, pixel);
+                tile.needs_update = true;
+                break;
+            }
+        }
     }
 
     pub fn save_project(&mut self, file: std::path::PathBuf) -> anyhow::Result<()> {
@@ -350,12 +371,12 @@ impl PluginRack {
                 for i in 0..input_count {
                     inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
                 }
-                
+
                 for i in 0..output_count {
                     outputs[i].push(0.0);
                 }
             }
-            
+
             let mut audio_buffer = buf.bind(&inputs, &mut outputs);
 
             debug!("Mapping took: {} ms", start.elapsed().as_millis());
@@ -372,53 +393,12 @@ impl PluginRack {
                 .pixels_mut()
                 .zip(&outputs[plugin.output_channel])
             {
-                let mut srgb = Srgba::new(
-                    pixel.0[0] as f32 / 255.0,
-                    pixel.0[1] as f32 / 255.0,
-                    pixel.0[2] as f32 / 255.0,
-                    pixel.0[3] as f32 / 255.0,
-                );
-
-                match plugin.input_channel {
-                    InputChannelType::Hue => {
-                        let mut hsv = Hsva::from_color(srgb);
-                        hsv.hue = RgbHue::from_degrees((*sample * 360.0) * plugin.wet);
-                        srgb = Srgba::from_color(hsv);
-                    }
-                    InputChannelType::Saturation => {
-                        let mut hsv = Hsva::from_color(srgb);
-                        hsv.saturation = *sample * plugin.wet;
-                        srgb = Srgba::from_color(hsv);
-                    }
-                    InputChannelType::Value => {
-                        let mut hsv = Hsva::from_color(srgb);
-                        hsv.value = *sample * plugin.wet;
-                        srgb = Srgba::from_color(hsv);
-                    }
-                    InputChannelType::Red => {
-                        srgb.red = *sample * plugin.wet;
-                    }
-                    InputChannelType::Green => {
-                        srgb.green = *sample * plugin.wet;
-                    }
-                    InputChannelType::Blue => {
-                        srgb.blue = *sample * plugin.wet;
-                    }
-                    InputChannelType::Alpha => {
-                        srgb.alpha = *sample * plugin.wet;
-                    }
-                }
-
-                pixel.0[0] = (srgb.red * 255.0) as u8;
-                pixel.0[1] = (srgb.green * 255.0) as u8;
-                pixel.0[2] = (srgb.blue * 255.0) as u8;
-                pixel.0[3] = (srgb.alpha * 255.0) as u8;
+                sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
             }
             debug!("Image return took: {} ms", start.elapsed().as_millis());
         }
 
         last_image[self.position].needs_update = true;
-
         if self.total <= self.position {
             self.finished = true;
             for plugin in &mut self.plugins {
@@ -433,5 +413,73 @@ impl PluginRack {
         }
 
         debug!("{}/{}", self.position, self.total);
+    }
+
+    pub fn process_area(&mut self, area: Area) {
+        for plugin in &mut self.plugins {
+            let instance = plugin.instance.as_mut();
+
+            if instance.is_none() || plugin.bypass {
+                continue;
+            }
+            let instance = instance.unwrap();
+            let input_count = instance.get_info().inputs as usize;
+            let output_count = instance.get_info().outputs as usize;
+
+            if input_count == 0 {
+                continue;
+            }
+
+            let mut buf: HostBuffer<f32> = HostBuffer::new(input_count, output_count);
+            let mut inputs: Vec<Vec<f32>> = vec![vec![0.0]; input_count];
+            let mut outputs = vec![vec![0.0]; output_count];
+
+            let mut crop_img = None;
+
+            let x_f = area.x % 256;
+            let y_f = area.y % 256;
+            let mut idx = 0;
+            let last_image = self.images.last_mut().unwrap();
+
+            for tile in last_image.iter() {
+                if area.check_position(tile.location()) {
+                    let crop = crop_imm(&tile.data, x_f, y_f, area.width, area.height);
+                    crop_img = Some(crop.to_image());
+                    break;
+                }
+                idx += 1;
+            }
+
+            for sample in crop_img.as_mut().unwrap().pixels() {
+                for i in 0..input_count {
+                    inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
+                }
+
+                for i in 0..output_count {
+                    outputs[i].push(0.0);
+                }
+            }
+
+            let mut audio_buffer = buf.bind(&inputs, &mut outputs);
+
+            instance.suspend();
+            instance.set_block_size(area.area() as i64);
+            instance.resume();
+            instance.start_process();
+            instance.process(&mut audio_buffer);
+            instance.stop_process();
+            instance.suspend();
+
+            for (pixel, sample) in crop_img.as_mut().unwrap()
+                .pixels_mut()
+                .zip(&outputs[plugin.output_channel])
+            {
+                sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
+            }
+
+            replace(&mut last_image[idx].data, &crop_img.unwrap(), x_f as i64, y_f as i64);
+
+            last_image[idx].needs_update = true;
+        }
     }
 }

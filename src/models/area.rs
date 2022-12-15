@@ -17,4 +17,17 @@ impl Area {
             height,
         }
     }
+
+    /// Compares two area positions. returns `true` if area have same position
+    pub fn check_position(&self, area: Area) -> bool {
+        self.x < area.x + area.width
+            && area.x < self.x + self.width
+            && self.y < area.y + area.height
+            && area.y < self.y + area.height
+    }
+
+    /// Computes area of Area
+    pub fn area(&self) -> u32 {
+        self.width * self.height
+    }
 }

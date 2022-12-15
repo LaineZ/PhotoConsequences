@@ -5,12 +5,13 @@ use egui::{
 };
 use egui_extras::{Size, TableBody, TableBuilder};
 use log::{debug, trace};
-use std::{io::Read, path::PathBuf, time::Instant};
+use std::{io::Read, ops::Neg, path::PathBuf, time::Instant};
 use vst::prelude::Plugin;
 use winit::{dpi::PhysicalSize, event_loop::EventLoopWindowTarget, window::WindowId};
 
 use crate::{
-    models::ui_enums::{Action, DialogVariant, ModalWindows},
+    image_generators,
+    models::{ui_enums::{Action, DialogVariant, ModalWindows}, area::Area},
     msgboxwrapper::messagebox,
     plugin_rack::{InputChannelType, PluginRack},
     renderer::{self, Renderer},
@@ -21,6 +22,7 @@ pub struct State {
     modal: ModalWindows,
     save_path: Option<PathBuf>,
     timer: Instant,
+    grid_enabled: bool,
 }
 
 impl State {
@@ -30,6 +32,7 @@ impl State {
             modal: ModalWindows::None,
             save_path: None,
             timer: Instant::now(),
+            grid_enabled: false,
         }
     }
 
@@ -339,24 +342,14 @@ impl State {
         self.rack.start_process();
     }
 
-    fn mouse_movement(&mut self, position: PlotPoint, response: Response, renderer: &mut Renderer) {
+    fn mouse_movement(&mut self, position: PlotPoint, response: Response, _renderer: &mut Renderer) {
         if response.dragged() {
-            // println!("x: {} y: {}", (position.x as f64), (position.y as f64));
+            //debug!("x: {} y: {}", (position.x as f64), (position.y as f64));
 
-            // let xpos = position.x as i32;
-            // let ypos = position.y as i32;
+            let xpos = position.x as i32;
+            let ypos = position.y as i32;
 
-            // for x in -3..3 {
-            //     for y in -3..3 {
-            //         let last_image = self.rack.images.last_mut().unwrap();
-            //         let pixel = last_image.get_pixel_mut((xpos + x) as u32, (ypos + y) as u32);
-            //         pixel.0[0] = 255;
-            //         pixel.0[1] = 255;
-            //         pixel.0[2] = 255;
-            //     }
-            // }
-
-            // crate::image_utils::split_image(self.rack.images.last_mut().unwrap(), 3, 3);
+            self.rack.process_area(Area::new(xpos as u32 - 2, ypos as u32 - 2, 4, 4));
         }
     }
 
@@ -465,18 +458,18 @@ impl State {
                     }
                 });
 
-                // ui.menu_button("Tools", |ui| {
-                //     if ui.button("⧯ Generate noise image").clicked() {
-                //         renderer.cleanup_image();
-                //         self.rack.images.clear();
-                //         self.rack.images.push(image_generators::generate_noise());
-                //     }
-                // });
+                ui.menu_button("Tools", |ui| {
+                    if ui.button("⧯ Generate noise image").clicked() {
+                        self.rack
+                            .load_image_rgba(&mut image_generators::generate_noise());
+                    }
+                });
 
                 ui.menu_button("About", |ui| {
                     if ui.button("ℹ About").clicked() {
                         self.modal = ModalWindows::About;
                     }
+
                     if ui.button("⬌ GitHub repository page").clicked() {
                         webbrowser::open("http://github.com/LaineZ/PhotoConsequences").unwrap();
                     }
@@ -571,6 +564,7 @@ impl State {
                 }
 
                 ui.add_enabled_ui(!self.rack.images.is_empty(), |ui| {
+                    ui.checkbox(&mut self.grid_enabled, "Grid");
                     if self.rack.is_finished() {
                         if ui.button("✅ Apply FX on image").clicked() {
                             self.process();
@@ -594,12 +588,14 @@ impl State {
 
             let plot = Plot::new("photo_preview")
                 .legend(Legend::default().position(Corner::RightBottom))
-                .show_x(true)
-                .show_y(true)
+                .show_x(self.grid_enabled)
+                .show_y(self.grid_enabled)
                 .show_background(false)
-                .show_axes([true; 2])
-                .allow_drag(true)
+                .show_axes([self.grid_enabled; 2])
+                .allow_drag(false)
                 .data_aspect(1.0);
+
+            let mut mouse_position = None;
 
             if !renderer.textures.is_empty() {
                 let response = plot.show(ui, |plot_ui| {
@@ -619,7 +615,17 @@ impl State {
                             plot_ui.image(image);
                         }
                     }
+
+                    mouse_position = plot_ui.pointer_coordinate();
                 });
+
+                if let Some(mut position) = mouse_position {
+                    position.y = position.y.neg();
+
+                    if position.x.is_sign_positive() && position.y.is_sign_positive() {
+                        self.mouse_movement(position, response.response, renderer);
+                    }
+                }
                 // check for destroyed textures
                 for txt in renderer.textures.iter_mut() {
                     txt.destroy_texture();
