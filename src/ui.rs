@@ -11,9 +11,15 @@ use winit::{dpi::PhysicalSize, event_loop::EventLoopWindowTarget, window::Window
 
 use crate::{
     image_generators,
-    models::{ui_enums::{Action, DialogVariant, ModalWindows}, area::Area},
+    models::{
+        area::Area,
+        ui_enums::{Action, DialogVariant, ModalWindows},
+    },
     msgboxwrapper::messagebox,
-    plugin_rack::{InputChannelType, PluginRack},
+    rack::{
+        instance::{InputChannelType, PluginRackInstance},
+        PluginRack,
+    },
     renderer::{self, Renderer},
 };
 
@@ -85,8 +91,7 @@ impl State {
 
         let mut proj_file_string = String::new();
         proj_file.read_to_string(&mut proj_file_string)?;
-        let instacnes: Vec<crate::plugin_rack::PluginRackInstance> =
-            serde_json::from_str(&proj_file_string)?;
+        let instacnes: Vec<PluginRackInstance> = serde_json::from_str(&proj_file_string)?;
 
         renderer.clear_render();
         renderer.windows.clear();
@@ -342,14 +347,27 @@ impl State {
         self.rack.start_process();
     }
 
-    fn mouse_movement(&mut self, position: PlotPoint, response: Response, _renderer: &mut Renderer) {
+    fn mouse_movement(
+        &mut self,
+        position: PlotPoint,
+        response: Response,
+        _renderer: &mut Renderer,
+    ) {
         if response.dragged() {
             //debug!("x: {} y: {}", (position.x as f64), (position.y as f64));
 
             let xpos = position.x as i32;
             let ypos = position.y as i32;
 
-            self.rack.process_area(Area::new(xpos as u32 - 2, ypos as u32 - 2, 4, 4));
+            let w = 32;
+            let h = 32;
+
+            self.rack.process_area(Area::new(
+                (xpos as u32).saturating_sub(w / 2),
+                (ypos as u32).saturating_sub(h / 2),
+                w,
+                h,
+            ));
         }
     }
 
@@ -360,7 +378,7 @@ impl State {
 
         if self.timer.elapsed().as_millis() > 33 && !self.rack.images.is_empty() {
             let img = self.rack.images.last_mut().unwrap();
-            for (i, img) in img.iter_mut().enumerate() {
+            for (i, img) in img.splits.iter_mut().enumerate() {
                 if img.needs_update {
                     if let Some(idx) = renderer.textures.get_mut(i) {
                         idx.cleanup_image();

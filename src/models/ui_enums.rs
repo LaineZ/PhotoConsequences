@@ -1,4 +1,4 @@
-use crate::plugin_rack::InputChannelType;
+use crate::rack::instance::InputChannelType;
 
 #[derive(Debug)]
 pub enum Action {

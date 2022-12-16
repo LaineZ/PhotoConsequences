@@ -23,7 +23,7 @@ impl Area {
         self.x < area.x + area.width
             && area.x < self.x + self.width
             && self.y < area.y + area.height
-            && area.y < self.y + area.height
+            && area.y < self.y + self.height
     }
 
     /// Computes area of Area

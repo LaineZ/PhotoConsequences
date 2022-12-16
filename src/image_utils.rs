@@ -3,18 +3,99 @@ use log::debug;
 
 use crate::models::area::Area;
 
-pub const IMAGE_SPLIT_W: usize = 128;
-pub const IMAGE_SPLIT_H: usize = 128;
+pub const IMAGE_SPLIT_W: u32 = 128;
+pub const IMAGE_SPLIT_H: u32 = 128;
 
 #[derive(Clone)]
 pub struct SplittedImage {
-    location: Area,
     origianl_dimensions: Area,
+    pub splits: Vec<ImageTile>,
+}
+
+impl SplittedImage {
+    pub fn new(image: &mut RgbaImage) -> Self {
+        let width = image.width();
+        let height = image.height();
+
+        let mut splits = Vec::new();
+
+        for y in (0..height).step_by(IMAGE_SPLIT_W as usize) {
+            for x in (0..width).step_by(IMAGE_SPLIT_H as usize) {
+                let split = ImageTile::new(
+                    Area::new(x, y, IMAGE_SPLIT_W as u32, IMAGE_SPLIT_H as u32),
+                    image,
+                );
+                splits.push(split);
+            }
+        }
+        Self {
+            splits,
+            origianl_dimensions: Area::new(0, 0, image.width(), image.height()),
+        }
+    }
+
+    pub fn origianl_dimensions(&self) -> Area {
+        self.origianl_dimensions
+    }
+
+    pub fn join_image(&self) -> RgbaImage {
+        let mut img = RgbaImage::new(
+            self.origianl_dimensions.width,
+            self.origianl_dimensions.height,
+        );
+    
+        for split in &self.splits {
+            img.copy_from(&split.data, split.location.x, split.location.y)
+                .unwrap();
+        }
+        img
+    }
+
+    pub fn put_pixel(&mut self, x: u32, y: u32, pixel: image::Rgba<u8>) {
+        let x_f = x % IMAGE_SPLIT_W;
+        let y_f = y % IMAGE_SPLIT_H;
+
+        for tile in self.splits.iter_mut() {
+            let loc = Area::new(x, y, 1, 1);
+            if loc.check_position(tile.location()) {
+                //debug!("{}x{}  x{} y{}", x_f, y_f, x, y);
+                tile.data.put_pixel(x_f, y_f, pixel);
+                tile.needs_update = true;
+                break;
+            }
+        }
+    }
+
+    pub fn get_pixel(&mut self, x: u32, y: u32) -> Option<&image::Rgba<u8>> {
+        let x_f = x % IMAGE_SPLIT_W;
+        let y_f = y % IMAGE_SPLIT_H;
+
+        for tile in self.splits.iter() {
+            let loc = Area::new(x, y, 1, 1);
+            if loc.check_position(tile.location()) {
+                //debug!("{}x{}  x{} y{}", x_f, y_f, x, y);
+                return Some(tile.data.get_pixel(x_f, y_f))
+            }
+        }
+
+        None
+    }
+
+    pub fn request_all_update(&mut self) {
+        for blocks in &mut self.splits {
+            blocks.needs_update = true;
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct ImageTile {
+    location: Area,
     pub data: image::RgbaImage,
     pub needs_update: bool,
 }
 
-impl SplittedImage {
+impl ImageTile {
     pub fn new(location: Area, data: &mut image::RgbaImage) -> Self {
         let crop = crop(
             data,
@@ -37,7 +118,6 @@ impl SplittedImage {
         Self {
             location,
             data: img,
-            origianl_dimensions: Area::new(0, 0, data.width(), data.height()),
             needs_update: true,
         }
     }
@@ -45,44 +125,4 @@ impl SplittedImage {
     pub fn location(&self) -> Area {
         self.location
     }
-
-    pub fn origianl_dimensions(&self) -> Area {
-        self.origianl_dimensions
-    }
-}
-
-pub fn split_image(
-    image: &mut RgbaImage,
-    tile_width: usize,
-    tile_height: usize,
-) -> Vec<SplittedImage> {
-    let width = image.width();
-    let height = image.height();
-
-    let mut result = Vec::new();
-
-    for y in (0..height).step_by(tile_width) {
-        for x in (0..width).step_by(tile_height) {
-            let split = SplittedImage::new(
-                Area::new(x, y, tile_width as u32, tile_height as u32),
-                image,
-            );
-            result.push(split);
-        }
-    }
-    result
-}
-
-pub fn join_image(splits: &Vec<SplittedImage>) -> RgbaImage {
-    let mut img = RgbaImage::new(
-        splits[0].origianl_dimensions.width,
-        splits[0].origianl_dimensions.height,
-    );
-
-    for split in splits {
-        img.copy_from(&split.data, split.location.x, split.location.y)
-            .unwrap();
-    }
-
-    img
 }

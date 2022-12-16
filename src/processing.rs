@@ -1,7 +1,7 @@
 use image::Rgba;
 use palette::{FromColor, Hsva, Srgba};
 
-use crate::plugin_rack::InputChannelType;
+use crate::rack::instance::InputChannelType;
 
 pub fn rgba_to_sample(input: InputChannelType, sample: &image::Rgba<u8>) -> f32 {
     let srgb = Srgba::new(
