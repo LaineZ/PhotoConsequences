@@ -13,7 +13,7 @@ use crate::{
     image_generators,
     models::{
         area::Area,
-        ui_enums::{Action, DialogVariant, ModalWindows},
+        ui_enums::{Action, DialogVariant, ModalWindows, Tool},
     },
     msgboxwrapper::messagebox,
     rack::{
@@ -29,6 +29,7 @@ pub struct State {
     save_path: Option<PathBuf>,
     timer: Instant,
     grid_enabled: bool,
+    tool: Tool,
 }
 
 impl State {
@@ -39,6 +40,7 @@ impl State {
             save_path: None,
             timer: Instant::now(),
             grid_enabled: false,
+            tool: Tool::Hand
         }
     }
 
@@ -353,14 +355,14 @@ impl State {
         response: Response,
         _renderer: &mut Renderer,
     ) {
-        if response.dragged() {
+        if response.dragged() && self.tool == Tool::Brush {
             //debug!("x: {} y: {}", (position.x as f64), (position.y as f64));
 
             let xpos = position.x as i32;
             let ypos = position.y as i32;
 
-            let w = 32;
-            let h = 32;
+            let w = 8;
+            let h = 8;
 
             self.rack.process_area(Area::new(
                 (xpos as u32).saturating_sub(w / 2),
@@ -562,6 +564,27 @@ impl State {
 
         egui::CentralPanel::default().show(context, |ui| {
             ui.horizontal(|ui| {
+                let color_brush = if self.tool == Tool::Brush {
+                    Color32::DARK_BLUE
+                } else {
+                    ui.visuals().widgets.active.bg_fill
+                };
+
+                let color_hand = if self.tool == Tool::Hand {
+                    Color32::DARK_BLUE
+                } else {
+                    ui.visuals().widgets.active.bg_fill
+                };
+
+                if ui.add(egui::Button::new("Brush").fill(color_brush)).clicked() {
+                    self.tool = Tool::Brush;
+                }
+
+                if ui.add(egui::Button::new("Hand").fill(color_hand)).clicked() {
+                    self.tool = Tool::Hand;
+                }
+
+
                 if ui
                     .add_enabled(self.rack.is_finished(), Button::new("📂 Open image"))
                     .clicked()
@@ -610,7 +633,7 @@ impl State {
                 .show_y(self.grid_enabled)
                 .show_background(false)
                 .show_axes([self.grid_enabled; 2])
-                .allow_drag(false)
+                .allow_drag(self.tool == Tool::Hand)
                 .data_aspect(1.0);
 
             let mut mouse_position = None;

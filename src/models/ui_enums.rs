@@ -11,6 +11,12 @@ pub enum Action {
     ChangeSampleRate(usize, f32),
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Tool {
+    Brush,
+    Hand,
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum ModalWindows {
     Exit,
