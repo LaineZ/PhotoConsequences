@@ -14,7 +14,7 @@ use image::{
 use log::debug;
 
 use crate::{
-    image_utils::{self, SplittedImage},
+    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W},
     models::area::Area,
     processing::{rgba_to_sample, sample_to_rgba},
 };
@@ -323,53 +323,49 @@ impl PluginRack {
             let mut outputs = vec![vec![0.0]; output_count];
             let last_image = self.images.last_mut().unwrap();
 
-            for tile in last_image.splits.iter_mut() {
-                if area.check_position(tile.location()) {
-                    let x_f = area.x % tile.location().width;
-                    let y_f = area.y % tile.location().height;
+            let chunk_x = area.x / IMAGE_SPLIT_W;
+            let chunk_y = area.y / IMAGE_SPLIT_H;
 
-                    debug!("{}x{}", x_f, y_f);
+            let orig_width_tiles = last_image.origianl_dimensions().width / IMAGE_SPLIT_W;
 
-                    let crop = crop_imm(&tile.data, x_f, y_f, area.width, area.height);
-                    let mut crop_img = crop.to_image();
+            let mut current_split =
+                &mut last_image.splits[(orig_width_tiles * chunk_y + chunk_x) as usize];
 
-                    for sample in crop_img.pixels() {
-                        for i in 0..input_count {
-                            inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
-                        }
+            let x_f = area.x % current_split.location().width;
+            let y_f = area.y % current_split.location().height;
 
-                        for i in 0..output_count {
-                            outputs[i].push(0.0);
-                        }
-                    }
+            let crop = crop_imm(&current_split.data, x_f, y_f, area.width, area.height);
+            let mut crop_img = crop.to_image();
 
-                    let mut audio_buffer = buf.bind(&inputs, &mut outputs);
+            debug!("{}x{} w: {} h: {}", x_f, y_f, crop_img.width(), crop_img.height());
 
-                    instance.suspend();
-                    instance.set_block_size(area.area() as i64);
-                    instance.resume();
-                    instance.start_process();
-                    instance.process(&mut audio_buffer);
-                    instance.stop_process();
-                    instance.suspend();
+            for sample in crop_img.pixels() {
+                for i in 0..input_count {
+                    inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
+                }
 
-                    for (pixel, sample) in crop_img
-                        .pixels_mut()
-                        .zip(&outputs[plugin.output_channel])
-                    {
-                        sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
-                    }
-
-                    replace(
-                        &mut tile.data,
-                        &crop_img,
-                        x_f as i64,
-                        y_f as i64,
-                    );
-
-                    tile.needs_update = true;
+                for i in 0..output_count {
+                    outputs[i].push(0.0);
                 }
             }
+
+            let mut audio_buffer = buf.bind(&inputs, &mut outputs);
+
+            instance.suspend();
+            instance.set_block_size(area.area() as i64);
+            instance.resume();
+            instance.start_process();
+            instance.process(&mut audio_buffer);
+            instance.stop_process();
+            instance.suspend();
+
+            for (pixel, sample) in crop_img.pixels_mut().zip(&outputs[plugin.output_channel]) {
+                sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
+            }
+
+            replace(&mut current_split.data, &crop_img, x_f as i64, y_f as i64);
+
+            current_split.needs_update = true;
         }
     }
 }
