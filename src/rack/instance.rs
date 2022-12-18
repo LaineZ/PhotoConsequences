@@ -66,7 +66,10 @@ impl PluginRackInstance {
         if let Some(inst) = self.instance.as_mut() {
             inst.init();
             let info = inst.get_info();
-            self.editor = EditorWrapper::new(inst.get_editor(), format!("Plugin editor for {} ({})", info.name, info.vendor));
+            self.editor = EditorWrapper::new(
+                inst.get_editor(),
+                format!("Plugin editor for {} ({})", info.name, info.vendor),
+            );
             if !self.plugin_data.is_empty() {
                 info!("Found a plugin data LOADING NOW!");
                 self.load_block()?;

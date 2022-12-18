@@ -14,7 +14,7 @@ use image::{
 use log::debug;
 
 use crate::{
-    image_utils::{self, SplittedImage, IMAGE_SPLIT_H, IMAGE_SPLIT_W},
+    image_utils::{self, SplittedImage},
     models::area::Area,
     processing::{rgba_to_sample, sample_to_rgba},
 };
@@ -33,6 +33,7 @@ pub struct PluginRack {
     pub host: Arc<Mutex<PluginHost>>,
     pub plugins: Vec<PluginRackInstance>,
     pub images: Vec<SplittedImage>,
+    block_size: i64,
     /// Current tile processing position
     position: usize,
     /// Total processing tiles
@@ -59,6 +60,7 @@ impl PluginRack {
         let host = Arc::new(Mutex::new(PluginHost));
         Self {
             host,
+            block_size: 8192,
             plugins: Vec::new(),
             images: Vec::new(),
             position: 0,
@@ -114,7 +116,7 @@ impl PluginRack {
         self.images.clear();
         let img = ImageReader::open(file)?.decode()?;
 
-        let split = image_utils::SplittedImage::new(&mut img.into_rgba8());
+        let split = image_utils::SplittedImage::new(img.into_rgba8());
         self.images.push(split);
         Ok(())
     }
@@ -125,19 +127,20 @@ impl PluginRack {
             .with_guessed_format()?
             .decode()?;
 
-        let split = image_utils::SplittedImage::new(&mut img.into_rgba8());
+        let split = image_utils::SplittedImage::new(img.into_rgba8());
         self.images.push(split);
         Ok(())
     }
 
     pub fn load_image_rgba(&mut self, image: &mut RgbaImage) {
         self.images.clear();
-        self.images.push(image_utils::SplittedImage::new(image));
+        self.images
+            .push(image_utils::SplittedImage::new(image.clone()));
     }
 
     pub fn save_image<P: AsRef<std::path::Path>>(&self, file: P) -> Result<(), image::ImageError> {
-        let img = self.images.last().unwrap().join_image();
-        img.save(file)
+        let img = self.images.last().unwrap();
+        img.image.save(file)
     }
 
     pub fn save_project(&mut self, file: std::path::PathBuf) -> anyhow::Result<()> {
@@ -159,7 +162,7 @@ impl PluginRack {
         zip.start_file("image.png", options)?;
         let mut bytes: Vec<u8> = Vec::new();
 
-        let img = self.images.last().unwrap().join_image();
+        let img = &self.images.last().unwrap().image;
         img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
         zip.write_all(&bytes)?;
 
@@ -194,7 +197,7 @@ impl PluginRack {
         self.images.push(img.clone());
         self.finished = false;
         self.position = 0;
-        self.total = self.images.last().unwrap().splits.len() - 1;
+        self.total = self.images.last().unwrap().image.pixels().len();
 
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
@@ -206,7 +209,7 @@ impl PluginRack {
             let instance = instance.unwrap();
 
             instance.suspend();
-            instance.set_block_size(256 * 256);
+            instance.set_block_size(self.block_size);
             instance.resume();
         }
     }
@@ -232,7 +235,7 @@ impl PluginRack {
 
         //let full_process_time = std::time::Instant::now();
 
-        let last_image = &mut self.images.last_mut().unwrap().splits;
+        let last_image = &mut self.images.last_mut().unwrap();
 
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
@@ -255,7 +258,7 @@ impl PluginRack {
             let mut inputs: Vec<Vec<f32>> = vec![vec![0.0]; input_count];
             let mut outputs = vec![vec![0.0]; output_count];
 
-            for sample in last_image[self.position].data.pixels() {
+            for sample in last_image.image.pixels().skip(self.position).take(self.block_size as usize) {
                 for i in 0..input_count {
                     inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
                 }
@@ -276,17 +279,23 @@ impl PluginRack {
 
             debug!("VST Processing took: {} ms", start.elapsed().as_millis());
             let start = std::time::Instant::now();
-            for (pixel, sample) in last_image[self.position]
-                .data
-                .pixels_mut()
+
+            for (pixel, sample) in last_image
+                .image
+                .enumerate_pixels_mut()
+                .skip(self.position)
+                .take(self.block_size as usize)
                 .zip(&outputs[plugin.output_channel])
             {
-                sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
+                sample_to_rgba(*sample, plugin.wet, pixel.2, plugin.input_channel);
+
+                //debug!("{}x{}", pixel.0, pixel.1);
             }
-            debug!("Image return took: {} ms", start.elapsed().as_millis());
+            debug!("image return took: {} ms", start.elapsed().as_millis());
+
+            last_image.request_all_update();
         }
 
-        last_image[self.position].needs_update = true;
         if self.total <= self.position {
             self.finished = true;
             for plugin in &mut self.plugins {
@@ -297,7 +306,7 @@ impl PluginRack {
             }
             debug!("finished")
         } else {
-            self.position += 1;
+            self.position += self.block_size as usize;
         }
 
         debug!("{}/{}", self.position, self.total);
@@ -323,49 +332,47 @@ impl PluginRack {
             let mut outputs = vec![vec![0.0]; output_count];
             let last_image = self.images.last_mut().unwrap();
 
-            let chunk_x = area.x / IMAGE_SPLIT_W;
-            let chunk_y = area.y / IMAGE_SPLIT_H;
+            for tile in last_image.splits.iter_mut() {
+                if area.check_position(tile.location()) {
+                    let crop = crop_imm(&last_image.image, area.x, area.y, area.width, area.height);
+                    let mut crop_img = crop.to_image();
 
-            let orig_width_tiles = last_image.origianl_dimensions().width / IMAGE_SPLIT_W;
+                    for sample in crop_img.pixels() {
+                        for i in 0..input_count {
+                            inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
+                        }
 
-            let mut current_split =
-                &mut last_image.splits[(orig_width_tiles * chunk_y + chunk_x) as usize];
+                        for i in 0..output_count {
+                            outputs[i].push(0.0);
+                        }
+                    }
 
-            let x_f = area.x % current_split.location().width;
-            let y_f = area.y % current_split.location().height;
+                    let mut audio_buffer = buf.bind(&inputs, &mut outputs);
 
-            let crop = crop_imm(&current_split.data, x_f, y_f, area.width, area.height);
-            let mut crop_img = crop.to_image();
+                    instance.suspend();
+                    instance.set_block_size(area.area() as i64);
+                    instance.resume();
+                    instance.start_process();
+                    instance.process(&mut audio_buffer);
+                    instance.stop_process();
+                    instance.suspend();
 
-            debug!("{}x{} w: {} h: {}", x_f, y_f, crop_img.width(), crop_img.height());
+                    for (pixel, sample) in
+                        crop_img.pixels_mut().zip(&outputs[plugin.output_channel])
+                    {
+                        sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
+                    }
 
-            for sample in crop_img.pixels() {
-                for i in 0..input_count {
-                    inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
-                }
+                    replace(
+                        &mut last_image.image,
+                        &crop_img,
+                        area.x as i64,
+                        area.y as i64,
+                    );
 
-                for i in 0..output_count {
-                    outputs[i].push(0.0);
+                    tile.needs_update = true;
                 }
             }
-
-            let mut audio_buffer = buf.bind(&inputs, &mut outputs);
-
-            instance.suspend();
-            instance.set_block_size(area.area() as i64);
-            instance.resume();
-            instance.start_process();
-            instance.process(&mut audio_buffer);
-            instance.stop_process();
-            instance.suspend();
-
-            for (pixel, sample) in crop_img.pixels_mut().zip(&outputs[plugin.output_channel]) {
-                sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
-            }
-
-            replace(&mut current_split.data, &crop_img, x_f as i64, y_f as i64);
-
-            current_split.needs_update = true;
         }
     }
 }

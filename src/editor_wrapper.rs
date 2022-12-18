@@ -1,13 +1,12 @@
 use std::io::Cursor;
 
 use crate::renderer;
-use log::error;
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use vst::editor::Editor;
 use winit::{
     dpi::LogicalSize,
     event_loop::EventLoopWindowTarget,
-    window::{Window, WindowId, Icon},
+    window::{Icon, Window, WindowId},
 };
 
 use image::io::Reader as ImageReader;
@@ -16,7 +15,7 @@ use image::io::Reader as ImageReader;
 pub struct EditorWrapper {
     pub editor: Option<Box<dyn Editor>>,
     pub window_id: Option<WindowId>,
-    name: String
+    name: String,
 }
 
 impl EditorWrapper {
@@ -42,16 +41,15 @@ impl EditorWrapper {
     ) -> anyhow::Result<Window> {
         println!("opening editor");
 
-
         let mut bytes = include_bytes!("resources/plugin_icon.png");
         let img = ImageReader::new(Cursor::new(&mut bytes))
             .with_guessed_format()
             .unwrap()
             .decode()
             .unwrap();
-    
+
         let mut icon = None;
-    
+
         if let Ok(icn) = Icon::from_rgba(img.to_rgba8().to_vec(), img.width(), img.height()) {
             icon = Some(icn);
         }

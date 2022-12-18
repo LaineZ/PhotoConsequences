@@ -4,6 +4,7 @@ use crate::renderer::{Event, Renderer};
 use crate::ui::State;
 use crate::VERSION;
 use ::egui::FontDefinitions;
+use egui::{FontData, FontFamily, TextStyle};
 use egui_wgpu_backend::ScreenDescriptor;
 use log::{debug, error};
 use std::io::Cursor;
@@ -80,7 +81,27 @@ pub fn gui(args: Vec<String>) {
 
     // We use the egui_wgpu_backend crate as the render backend
 
+    let mut fonts = FontDefinitions::default();
+    fonts.font_data.insert(
+        "my_font".to_owned(),
+        FontData::from_static(include_bytes!("../resources/OpenSans-Regular.ttf")),
+    );
+
+    fonts
+        .families
+        .get_mut(&FontFamily::Proportional)
+        .unwrap()
+        .insert(0, "my_font".to_owned());
+
     let start_time = Instant::now();
+
+    platform.context().set_fonts(fonts);
+
+    let mut style = (*platform.context().style()).clone();
+    style.text_styles.get_mut(&TextStyle::Button).unwrap().size = 14.0;
+
+    platform.context().set_style(style);
+
     event_loop.run(move |event, event_loop, _control_flow| {
         // Pass the winit events to the platform integration.
         platform.handle_event(&event, window.id());

@@ -30,6 +30,7 @@ pub struct State {
     timer: Instant,
     grid_enabled: bool,
     tool: Tool,
+    brush_size: u32,
 }
 
 impl State {
@@ -40,7 +41,8 @@ impl State {
             save_path: None,
             timer: Instant::now(),
             grid_enabled: false,
-            tool: Tool::Hand
+            tool: Tool::Hand,
+            brush_size: 8,
         }
     }
 
@@ -168,8 +170,8 @@ impl State {
                 row.col(|ui| {
                     ui.label(&info.name)
                         .on_hover_text(
-                        format!("Right-click for more options\n{} ({})\nCategory: {:?}\nInitial delay: {}\nI/O: {}/{}\n64 bit mixing support: {}", 
-                        info.name, info.vendor, info.category, info.initial_delay, info.inputs, info.outputs, info.f64_precision));
+                        format!("Right-click for more options\n{} ({})\nCategory: {:?}\nInitial delay: {}\nI/O: {}/{}", 
+                        info.name, info.vendor, info.category, info.initial_delay, info.inputs, info.outputs));
                 }).context_menu(|ui| {
                     ui.label("Image input channel processing:");
                     ui.separator();
@@ -206,7 +208,7 @@ impl State {
                         _ => { "" }
                     };
 
-                    if ui.add(egui::Slider::new(&mut output, 0..=(info.outputs - 1) as usize).prefix(prefix)).changed() {
+                    if ui.add(egui::Slider::new(&mut output, 1..=(info.outputs - 1) as usize).prefix(prefix)).changed() {
                         action = Some(Action::ChangeOutputChannel(idx, output));
                     }
                     
@@ -269,27 +271,31 @@ impl State {
             .auto_sized()
             .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
             .show(context, |ui| {
-                if self.save_path.is_some() {
-                    ui.label(format!(
-                        "Save {} before exiting?",
-                        self.save_path.as_ref().unwrap().display()
-                    ));
-                } else {
-                    ui.label("Save project before exiting?");
-                }
+                if self.rack.is_finished() {
+                    if self.save_path.is_some() {
+                        ui.label(format!(
+                            "Save {} before exiting?",
+                            self.save_path.as_ref().unwrap().display()
+                        ));
+                    } else {
+                        ui.label("Save project before exiting?");
+                    }
 
-                ui.horizontal(|ui| {
-                    if ui.button("✅ Yes").clicked() {
-                        res = DialogVariant::Yes;
-                    }
-                    if ui.button("❎ No").clicked() {
-                        res = DialogVariant::No;
-                    }
-                    if ui.button("🚫 Cancel").clicked() {
-                        self.modal = ModalWindows::None;
-                        res = DialogVariant::Cancel;
-                    }
-                });
+                    ui.horizontal(|ui| {
+                        if ui.button("✅ Yes").clicked() {
+                            res = DialogVariant::Yes;
+                        }
+                        if ui.button("❎ No").clicked() {
+                            res = DialogVariant::No;
+                        }
+                        if ui.button("🚫 Cancel").clicked() {
+                            self.modal = ModalWindows::None;
+                            res = DialogVariant::Cancel;
+                        }
+                    });
+                } else {
+                    ui.label("Waiting for end of processing...");
+                }
             });
 
         res
@@ -361,8 +367,8 @@ impl State {
             let xpos = position.x as i32;
             let ypos = position.y as i32;
 
-            let w = 8;
-            let h = 8;
+            let w = self.brush_size;
+            let h = self.brush_size;
 
             self.rack.process_area(Area::new(
                 (xpos as u32).saturating_sub(w / 2),
@@ -379,15 +385,27 @@ impl State {
         //println!("{:#?}", renderer.windows);
 
         if self.timer.elapsed().as_millis() > 33 && !self.rack.images.is_empty() {
-            let img = self.rack.images.last_mut().unwrap();
-            for (i, img) in img.splits.iter_mut().enumerate() {
+            let img_full = self.rack.images.last_mut().unwrap();
+            for (i, img) in img_full.splits.iter_mut().enumerate() {
                 if img.needs_update {
                     if let Some(idx) = renderer.textures.get_mut(i) {
                         idx.cleanup_image();
                     }
-                    renderer.upload_texture(&img.data, i);
-                    renderer.textures[i].location.x = img.location().x;
-                    renderer.textures[i].location.y = img.location().y;
+
+                    let location = img.location();
+
+                    let crop = image::imageops::crop(
+                        &mut img_full.image,
+                        location.x,
+                        location.y,
+                        location.width,
+                        location.height,
+                    );
+
+                    let crop_image = crop.to_image();
+
+                    renderer.upload_texture(&crop_image, i);
+                    renderer.textures[i].location = location;
                     img.needs_update = false;
                     trace!("{}: updated", i);
                 }
@@ -564,27 +582,6 @@ impl State {
 
         egui::CentralPanel::default().show(context, |ui| {
             ui.horizontal(|ui| {
-                let color_brush = if self.tool == Tool::Brush {
-                    Color32::DARK_BLUE
-                } else {
-                    ui.visuals().widgets.active.bg_fill
-                };
-
-                let color_hand = if self.tool == Tool::Hand {
-                    Color32::DARK_BLUE
-                } else {
-                    ui.visuals().widgets.active.bg_fill
-                };
-
-                if ui.add(egui::Button::new("Brush").fill(color_brush)).clicked() {
-                    self.tool = Tool::Brush;
-                }
-
-                if ui.add(egui::Button::new("Hand").fill(color_hand)).clicked() {
-                    self.tool = Tool::Hand;
-                }
-
-
                 if ui
                     .add_enabled(self.rack.is_finished(), Button::new("📂 Open image"))
                     .clicked()
@@ -605,6 +602,35 @@ impl State {
                 }
 
                 ui.add_enabled_ui(!self.rack.images.is_empty(), |ui| {
+                    let color_brush = if self.tool == Tool::Brush {
+                        Color32::DARK_BLUE
+                    } else {
+                        ui.visuals().widgets.active.bg_fill
+                    };
+
+                    let color_hand = if self.tool == Tool::Hand {
+                        Color32::DARK_BLUE
+                    } else {
+                        ui.visuals().widgets.active.bg_fill
+                    };
+
+                    if ui
+                        .add(egui::Button::new("Brush").fill(color_brush))
+                        .clicked()
+                    {
+                        self.tool = Tool::Brush;
+                    }
+
+                    if ui.add(egui::Button::new("⛶").fill(color_hand)).clicked() {
+                        self.tool = Tool::Hand;
+                    }
+
+                    if self.tool == Tool::Brush {
+                        ui.add(
+                            egui::Slider::new(&mut self.brush_size, 1..=512).prefix("Brush size: "),
+                        );
+                    }
+
                     ui.checkbox(&mut self.grid_enabled, "Grid");
                     if self.rack.is_finished() {
                         if ui.button("✅ Apply FX on image").clicked() {
@@ -634,6 +660,7 @@ impl State {
                 .show_background(false)
                 .show_axes([self.grid_enabled; 2])
                 .allow_drag(self.tool == Tool::Hand)
+                .allow_boxed_zoom(self.tool == Tool::Hand)
                 .data_aspect(1.0);
 
             let mut mouse_position = None;
