@@ -56,7 +56,7 @@ impl epi::backend::RepaintSignal for RepaintSignal {
 pub struct Renderer {
     /// Opened editor windows
     pub windows: Vec<Window>,
-    pub textures: Vec<RendererTexture>,
+    pub view_image_textures: Vec<RendererTexture>,
     pub device: Device,
     pub queue: Queue,
     pub render_pass: RenderPass,
@@ -100,7 +100,7 @@ impl Renderer {
 
         Ok(Self {
             windows: Vec::new(),
-            textures: Vec::new(),
+            view_image_textures: Vec::new(),
             device,
             queue,
             surface,
@@ -115,10 +115,10 @@ impl Renderer {
     }
 
     pub fn clear_render(&mut self) {
-        for txt in self.textures.iter_mut() {
+        for txt in self.view_image_textures.iter_mut() {
             txt.destroy_texture();
         }
-        self.textures.clear();
+        self.view_image_textures.clear();
     }
 
     pub fn upload_texture(&mut self, image: &RgbaImage, idx: usize) {
@@ -149,21 +149,21 @@ impl Renderer {
             label: Some("diffuse_texture"),
         }));
 
-        if idx < self.textures.len().saturating_sub(1) {
-            self.textures[idx] = RendererTexture::new(None, texture_native);
+        if idx < self.view_image_textures.len().saturating_sub(1) {
+            self.view_image_textures[idx] = RendererTexture::new(None, texture_native);
         } else {
-            self.textures
+            self.view_image_textures
                 .push(RendererTexture::new(None, texture_native));
         }
-        self.textures[idx].location.width = image.width();
-        self.textures[idx].location.height = image.height();
+        self.view_image_textures[idx].location.width = image.width();
+        self.view_image_textures[idx].location.height = image.height();
 
         //println!("{}x{}", self.textures[idx].location.width, self.textures[idx].location.height);
 
         self.queue.write_texture(
             // Tells wgpu where to copy the pixel data
             wgpu::ImageCopyTexture {
-                texture: self.textures[idx].native.as_ref().unwrap(),
+                texture: self.view_image_textures[idx].native.as_ref().unwrap(),
                 mip_level: 0,
                 origin: wgpu::Origin3d::ZERO,
                 aspect: wgpu::TextureAspect::All,
@@ -179,13 +179,13 @@ impl Renderer {
             texture_size,
         );
 
-        let view = self.textures[idx]
+        let view = self.view_image_textures[idx]
             .native
             .as_ref()
             .unwrap()
             .create_view(&wgpu::TextureViewDescriptor::default());
 
-        self.textures[idx].id = Some(self.render_pass.egui_texture_from_wgpu_texture(
+        self.view_image_textures[idx].id = Some(self.render_pass.egui_texture_from_wgpu_texture(
             &self.device,
             &view,
             wgpu::FilterMode::Nearest,

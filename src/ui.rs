@@ -31,6 +31,7 @@ pub struct State {
     grid_enabled: bool,
     tool: Tool,
     brush_size: u32,
+    brush_wet: f32,
 }
 
 impl State {
@@ -43,6 +44,7 @@ impl State {
             grid_enabled: false,
             tool: Tool::Hand,
             brush_size: 8,
+            brush_wet: 1.0,
         }
     }
 
@@ -202,6 +204,7 @@ impl State {
                     ui.label("Output audio channel:");
                     ui.separator();
                     let mut output = name.output_channel;
+                    
                     let prefix = match output {
                         0 => { "Left/Mono " }
                         1 => { "Right " }
@@ -375,7 +378,7 @@ impl State {
                 (ypos as u32).saturating_sub(h / 2),
                 w,
                 h,
-            ));
+            ), self.brush_wet);
         }
     }
 
@@ -388,7 +391,7 @@ impl State {
             let img_full = self.rack.images.last_mut().unwrap();
             for (i, img) in img_full.splits.iter_mut().enumerate() {
                 if img.needs_update {
-                    if let Some(idx) = renderer.textures.get_mut(i) {
+                    if let Some(idx) = renderer.view_image_textures.get_mut(i) {
                         idx.cleanup_image();
                     }
 
@@ -405,7 +408,7 @@ impl State {
                     let crop_image = crop.to_image();
 
                     renderer.upload_texture(&crop_image, i);
-                    renderer.textures[i].location = location;
+                    renderer.view_image_textures[i].location = location;
                     img.needs_update = false;
                     trace!("{}: updated", i);
                 }
@@ -414,12 +417,7 @@ impl State {
         }
     }
 
-    pub fn draw_ui(
-        &mut self,
-        context: &Context,
-        renderer: &mut Renderer,
-        event_loop: &EventLoopWindowTarget<renderer::Event>,
-    ) {
+    pub fn draw_modal(&mut self, context: &Context, renderer: &mut Renderer) {
         match self.modal {
             ModalWindows::Exit => match self.exit_window(context) {
                 DialogVariant::Yes => {
@@ -448,6 +446,15 @@ impl State {
             }
             _ => {}
         }
+    }
+
+    pub fn draw_ui(
+        &mut self,
+        context: &Context,
+        renderer: &mut Renderer,
+        event_loop: &EventLoopWindowTarget<renderer::Event>,
+    ) {
+        self.draw_modal(context, renderer);
         egui::TopBottomPanel::bottom("statusbar").show(context, |ui| {
             ui.label(format!(
                 "Processed: {}%",
@@ -514,6 +521,43 @@ impl State {
                 });
             });
 
+            let color_brush = if self.tool == Tool::Brush {
+                Color32::DARK_BLUE
+            } else {
+                ui.visuals().widgets.active.bg_fill
+            };
+
+            let color_hand = if self.tool == Tool::Hand {
+                Color32::DARK_BLUE
+            } else {
+                ui.visuals().widgets.active.bg_fill
+            };
+
+            ui.horizontal(|ui| {                
+                if ui
+                    .add(egui::Button::new("Brush").fill(color_brush))
+                    .clicked()
+                {
+                    self.tool = Tool::Brush;
+                }
+
+                if ui.add(egui::Button::new("⛶").fill(color_hand)).clicked() {
+                    self.tool = Tool::Hand;
+                }
+            });
+
+            if self.tool == Tool::Brush {
+                ui.label("Brush properties:");
+                ui.add(
+                    egui::Slider::new(&mut self.brush_size, 1..=512).prefix("Brush size: "),
+                );
+                ui.add(
+                    egui::Slider::new(&mut self.brush_wet, 0.0..=1.0).prefix("Brush wet: "),
+                );
+            }
+
+            ui.label("Plugins:");
+
             TableBuilder::new(ui)
                 .striped(true)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -546,7 +590,6 @@ impl State {
                         }
                     }
                 });
-
             ui.with_layout(
                 egui::Layout::from_main_dir_and_cross_align(
                     egui::Direction::TopDown,
@@ -602,35 +645,6 @@ impl State {
                 }
 
                 ui.add_enabled_ui(!self.rack.images.is_empty(), |ui| {
-                    let color_brush = if self.tool == Tool::Brush {
-                        Color32::DARK_BLUE
-                    } else {
-                        ui.visuals().widgets.active.bg_fill
-                    };
-
-                    let color_hand = if self.tool == Tool::Hand {
-                        Color32::DARK_BLUE
-                    } else {
-                        ui.visuals().widgets.active.bg_fill
-                    };
-
-                    if ui
-                        .add(egui::Button::new("Brush").fill(color_brush))
-                        .clicked()
-                    {
-                        self.tool = Tool::Brush;
-                    }
-
-                    if ui.add(egui::Button::new("⛶").fill(color_hand)).clicked() {
-                        self.tool = Tool::Hand;
-                    }
-
-                    if self.tool == Tool::Brush {
-                        ui.add(
-                            egui::Slider::new(&mut self.brush_size, 1..=512).prefix("Brush size: "),
-                        );
-                    }
-
                     ui.checkbox(&mut self.grid_enabled, "Grid");
                     if self.rack.is_finished() {
                         if ui.button("✅ Apply FX on image").clicked() {
@@ -665,9 +679,9 @@ impl State {
 
             let mut mouse_position = None;
 
-            if !renderer.textures.is_empty() {
+            if !renderer.view_image_textures.is_empty() {
                 let response = plot.show(ui, |plot_ui| {
-                    for txt in renderer.textures.iter_mut() {
+                    for txt in renderer.view_image_textures.iter_mut() {
                         if txt.native.is_none() {
                             continue;
                         }
@@ -680,6 +694,7 @@ impl State {
                                 ),
                                 vec2(txt.location.width as f32, txt.location.height as f32),
                             );
+
                             plot_ui.image(image);
                         }
                     }
@@ -695,7 +710,7 @@ impl State {
                     }
                 }
                 // check for destroyed textures
-                for txt in renderer.textures.iter_mut() {
+                for txt in renderer.view_image_textures.iter_mut() {
                     txt.destroy_texture();
                 }
             } else {

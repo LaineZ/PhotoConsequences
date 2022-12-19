@@ -258,7 +258,12 @@ impl PluginRack {
             let mut inputs: Vec<Vec<f32>> = vec![vec![0.0]; input_count];
             let mut outputs = vec![vec![0.0]; output_count];
 
-            for sample in last_image.image.pixels().skip(self.position).take(self.block_size as usize) {
+            for sample in last_image
+                .image
+                .pixels()
+                .skip(self.position)
+                .take(self.block_size as usize)
+            {
                 for i in 0..input_count {
                     inputs[i].push(rgba_to_sample(plugin.input_channel, sample))
                 }
@@ -312,7 +317,7 @@ impl PluginRack {
         debug!("{}/{}", self.position, self.total);
     }
 
-    pub fn process_area(&mut self, area: Area) {
+    pub fn process_area(&mut self, area: Area, wet: f32) {
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
 
@@ -361,9 +366,10 @@ impl PluginRack {
                         crop_img.pixels_mut().zip(&outputs[plugin.output_channel])
                     {
                         sample_to_rgba(*sample, plugin.wet, pixel, plugin.input_channel);
+                        pixel.0[3] = (wet * 255.0) as u8;
                     }
 
-                    replace(
+                    image::imageops::overlay(
                         &mut last_image.image,
                         &crop_img,
                         area.x as i64,
