@@ -24,14 +24,14 @@ use crate::{
 };
 
 pub struct State {
-    rack: PluginRack,
-    modal: ModalWindows,
-    save_path: Option<PathBuf>,
-    timer: Instant,
-    grid_enabled: bool,
-    tool: Tool,
-    brush_size: u32,
-    brush_wet: f32,
+    pub rack: PluginRack,
+    pub modal: ModalWindows,
+    pub save_path: Option<PathBuf>,
+    pub timer: Instant,
+    pub grid_enabled: bool,
+    pub tool: Tool,
+    pub brush_size: u32,
+    pub brush_wet: f32,
 }
 
 impl State {
@@ -257,6 +257,10 @@ impl State {
         action
     }
 
+    fn layers_table_draw(&self, mut body: TableBody) {
+
+    }
+
     fn init(&mut self, renderer: &mut Renderer) {
         renderer.clear_render();
         renderer.windows.clear();
@@ -265,7 +269,7 @@ impl State {
     }
 
     fn exit_window(&mut self, context: &Context) -> DialogVariant {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() {
+        if self.rack.layers.is_empty() && self.rack.plugins.is_empty() {
             return DialogVariant::No;
         }
         let mut res = DialogVariant::None;
@@ -323,7 +327,7 @@ impl State {
     }
 
     fn save_project_as_ui(&mut self) {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() {
+        if self.rack.layers.is_empty() && self.rack.plugins.is_empty() {
             return;
         }
 
@@ -336,7 +340,7 @@ impl State {
     }
 
     fn save_project_ui(&mut self) {
-        if self.rack.images.is_empty() && self.rack.plugins.is_empty() {
+        if self.rack.layers.is_empty() && self.rack.plugins.is_empty() {
             return;
         }
         if self.save_path.is_some() {
@@ -387,8 +391,8 @@ impl State {
         self.resize_editors(renderer);
         //println!("{:#?}", renderer.windows);
 
-        if self.timer.elapsed().as_millis() > 33 && !self.rack.images.is_empty() {
-            let img_full = self.rack.images.last_mut().unwrap();
+        if self.timer.elapsed().as_millis() > 33 && !self.rack.layers.is_empty() {
+            let img_full = self.rack.layers.last_mut().unwrap();
             for (i, img) in img_full.splits.iter_mut().enumerate() {
                 if img.needs_update {
                     if let Some(idx) = renderer.view_image_textures.get_mut(i) {
@@ -481,7 +485,7 @@ impl State {
                     }
                     ui.separator();
                     ui.add_enabled_ui(
-                        !self.rack.images.is_empty()
+                        !self.rack.layers.is_empty()
                             && !self.rack.plugins.is_empty()
                             && self.rack.is_finished(),
                         |ui| {
@@ -644,7 +648,7 @@ impl State {
                     }
                 }
 
-                ui.add_enabled_ui(!self.rack.images.is_empty(), |ui| {
+                ui.add_enabled_ui(!self.rack.layers.is_empty(), |ui| {
                     ui.checkbox(&mut self.grid_enabled, "Grid");
                     if self.rack.is_finished() {
                         if ui.button("✅ Apply FX on image").clicked() {
@@ -658,7 +662,7 @@ impl State {
                 });
 
                 ui.add_enabled_ui(
-                    self.rack.images.len() > 1 && self.rack.is_finished(),
+                    self.rack.layers.len() > 1 && self.rack.is_finished(),
                     |ui| {
                         if ui.button("↻ Undo").clicked() {
                             self.rack.undo();

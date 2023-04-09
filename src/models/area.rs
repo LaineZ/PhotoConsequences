@@ -18,6 +18,15 @@ impl Area {
         }
     }
 
+    pub fn new_centered(x: u32, y: u32, width: u32, height: u32) -> Self {
+        Self {
+            x,
+            y,
+            width: width / 2,
+            height: height / 2,
+        }
+    }
+
     /// Compares two area positions. returns `true` if area have same position
     pub fn check_position(&self, area: Area) -> bool {
         self.x < area.x + area.width

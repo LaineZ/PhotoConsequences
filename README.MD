@@ -1,7 +1,7 @@
 # PhotoConsequences
 ![PhotoConsequences](src/resources/icon.png)
 
-This software allows you apply almost any VST™ 2.4 effect and bound audio VST™ buffers on image channels **(hue, saturation, value)**. Combination of this parameters can achieve interesting effects on image. **Feel free to experement**!
+**PhotoConsequences** is a unique software that enables you to apply almost any VST™ 2.4 effect and bind audio VST™ buffers on image channels such as hue, saturation, and value. The combination of these parameters can produce interesting effects on images. The possibilities are endless, so feel free to experiment!
 
 **This software currently in development. breakable changes and random bugs are inevitable.**
 
@@ -19,7 +19,7 @@ Build insturctions is typical for any Rust project
 * Clone this repository
 * Run ``cargo build --release`` command
 
-# Screenshots and other media
+# Screenshots
 
 ![PhotoConsequences](/resources/screenshoot1.png)
 
@@ -29,7 +29,7 @@ Build insturctions is typical for any Rust project
 
 **Windows**
 
-**Linux** (also supports plugins via WINE using bridging software like yabridgectl)
+**Linux** (also supports plugins via WINE using bridging software like yabridge)
 
 **macOS** (untested; but should work without problems)
 

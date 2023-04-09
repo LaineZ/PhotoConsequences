@@ -32,7 +32,7 @@ pub struct PluginHost;
 pub struct PluginRack {
     pub host: Arc<Mutex<PluginHost>>,
     pub plugins: Vec<PluginRackInstance>,
-    pub images: Vec<SplittedImage>,
+    pub layers: Vec<SplittedImage>,
     block_size: i64,
     /// Current tile processing position
     position: usize,
@@ -62,7 +62,7 @@ impl PluginRack {
             host,
             block_size: 8192,
             plugins: Vec::new(),
-            images: Vec::new(),
+            layers: Vec::new(),
             position: 0,
             total: 0,
             finished: true,
@@ -70,9 +70,9 @@ impl PluginRack {
     }
 
     pub fn undo(&mut self) {
-        if self.images.len() > 1 {
-            self.images.remove(self.images.len() - 1);
-            self.images.last_mut().unwrap().request_all_update();
+        if self.layers.len() > 1 {
+            self.layers.remove(self.layers.len() - 1);
+            self.layers.last_mut().unwrap().request_all_update();
         }
     }
 
@@ -113,33 +113,33 @@ impl PluginRack {
     }
 
     pub fn load_image<P: AsRef<std::path::Path>>(&mut self, file: P) -> anyhow::Result<()> {
-        self.images.clear();
+        self.layers.clear();
         let img = ImageReader::open(file)?.decode()?;
 
         let split = image_utils::SplittedImage::new(img.into_rgba8());
-        self.images.push(split);
+        self.layers.push(split);
         Ok(())
     }
 
     pub fn load_image_data(&mut self, file: &[u8]) -> anyhow::Result<()> {
-        self.images.clear();
+        self.layers.clear();
         let img = ImageReader::new(Cursor::new(file))
             .with_guessed_format()?
             .decode()?;
 
         let split = image_utils::SplittedImage::new(img.into_rgba8());
-        self.images.push(split);
+        self.layers.push(split);
         Ok(())
     }
 
     pub fn load_image_rgba(&mut self, image: &mut RgbaImage) {
-        self.images.clear();
-        self.images
+        self.layers.clear();
+        self.layers
             .push(image_utils::SplittedImage::new(image.clone()));
     }
 
     pub fn save_image<P: AsRef<std::path::Path>>(&self, file: P) -> Result<(), image::ImageError> {
-        let img = self.images.last().unwrap();
+        let img = self.layers.last().unwrap();
         img.image.save(file)
     }
 
@@ -162,7 +162,7 @@ impl PluginRack {
         zip.start_file("image.png", options)?;
         let mut bytes: Vec<u8> = Vec::new();
 
-        let img = &self.images.last().unwrap().image;
+        let img = &self.layers.last().unwrap().image;
         img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
         zip.write_all(&bytes)?;
 
@@ -184,20 +184,20 @@ impl PluginRack {
     }
 
     pub fn start_process(&mut self) {
-        if self.plugins.is_empty() || self.images.is_empty() {
+        if self.plugins.is_empty() || self.layers.is_empty() {
             return;
         }
 
-        let img = self.images.last().unwrap().clone();
+        let img = self.layers.last().unwrap().clone();
 
-        if self.images.len() >= 2 {
-            self.images.remove(1);
+        if self.layers.len() >= 2 {
+            self.layers.remove(1);
         }
 
-        self.images.push(img.clone());
+        self.layers.push(img.clone());
         self.finished = false;
         self.position = 0;
-        self.total = self.images.last().unwrap().image.pixels().len();
+        self.total = self.layers.last().unwrap().image.pixels().len();
 
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
@@ -215,11 +215,11 @@ impl PluginRack {
     }
 
     pub fn stop_process(&mut self) {
-        self.images.remove(self.images.len() - 1);
+        self.layers.remove(self.layers.len() - 1);
         self.finished = true;
         self.position = 0;
         self.total = 0;
-        self.images.last_mut().unwrap().request_all_update();
+        self.layers.last_mut().unwrap().request_all_update();
     }
 
     /// Lazy iterative processing of VST effects (should called in a loop)
@@ -235,7 +235,7 @@ impl PluginRack {
 
         //let full_process_time = std::time::Instant::now();
 
-        let last_image = &mut self.images.last_mut().unwrap();
+        let last_image = &mut self.layers.last_mut().unwrap();
 
         for plugin in &mut self.plugins {
             let instance = plugin.instance.as_mut();
@@ -335,7 +335,7 @@ impl PluginRack {
             let mut buf: HostBuffer<f32> = HostBuffer::new(input_count, output_count);
             let mut inputs: Vec<Vec<f32>> = vec![vec![0.0]; input_count];
             let mut outputs = vec![vec![0.0]; output_count];
-            let last_image = self.images.last_mut().unwrap();
+            let last_image = self.layers.last_mut().unwrap();
 
             for tile in last_image.splits.iter_mut() {
                 if area.check_position(tile.location()) {
